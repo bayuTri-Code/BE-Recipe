@@ -9,15 +9,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bayuTri-Code/Auth-Services/database"
-	"github.com/bayuTri-Code/Auth-Services/internal/models"
+	"github.com/bayuTri-Code/BE-Recipe/database"
+	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 )
 
 type Claims struct {
+	ID   uuid.UUID `json:"id"`
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
@@ -36,16 +37,16 @@ func init() {
 	jwtSecret = []byte(secret)
 }
 
-func RegisterServices(ctx context.Context, Name, Email, Password string) (*models.AuthData, error) {
+func RegisterServices(ctx context.Context, Name, Email, Password string) (*models.User, error) {
 	db := database.Db
 	Email = strings.ToLower(strings.TrimSpace(Email))
 
-	var existing models.AuthData
+	var existing models.User
 	if err := db.WithContext(ctx).Where("email = ?", Email).First(&existing).Error; err == nil {
 		return nil, errors.New("user already exists")
 	}
 
-	registerUser := &models.AuthData{
+	registerUser := &models.User{
 		ID:       uuid.New(),
 		Name:     Name,
 		Email:    Email,
@@ -64,7 +65,7 @@ func RegisterServices(ctx context.Context, Name, Email, Password string) (*model
 
 
 func LoginServices(email, password string) (string, error) {
-	var user models.AuthData
+	var user models.User
 
 	result := database.Db.Where("email = ? AND password = ?", email, password).First(&user)
 	if result.Error != nil {
@@ -73,6 +74,7 @@ func LoginServices(email, password string) (string, error) {
 
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &Claims{
+		ID:   user.ID,
 		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -89,8 +91,8 @@ func LoginServices(email, password string) (string, error) {
 }
 
 
-func GetUserByEmail(email string) (*models.AuthData, error) {
-	var user models.AuthData
+func GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
 	result := database.Db.Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		return nil, errors.New("user not found")

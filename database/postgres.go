@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bayuTri-Code/Auth-Services/internal/config"
+	"github.com/bayuTri-Code/BE-Recipe/internal/config"
+	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var Db *gorm.DB
 
-func PostgresConn(){
+func PostgresConn() *gorm.DB {
 	configDb := config.DbConfig
 
 	SetDb := fmt.Sprintf(
@@ -23,6 +24,7 @@ func PostgresConn(){
 		configDb.DBName,
 		configDb.DBSslmode,
 	)
+
 	db, err := gorm.Open(postgres.Open(SetDb), &gorm.Config{})
 	if err != nil {
 		panic(err)
@@ -30,4 +32,24 @@ func PostgresConn(){
 
 	Db = db
 	log.Println("Database Connected")
+
+	autoMigrate(db)
+
+	return db
+}
+
+func autoMigrate(db *gorm.DB) {
+	err := db.AutoMigrate(
+		&models.User{},
+		&models.Recipe{},
+		&models.Ingredient{},
+		&models.Step{},
+		&models.Photo{},
+		&models.Favorite{},
+	)
+
+	if err != nil {
+		log.Fatalf("Auto Migration Failed: %v", err)
+	}
+	log.Println("Auto Migration Complete!")
 }

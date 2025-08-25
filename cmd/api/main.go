@@ -1,15 +1,14 @@
 package main
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/bayuTri-Code/Auth-Services/database"
-    "github.com/bayuTri-Code/Auth-Services/internal/config"
-    "github.com/bayuTri-Code/Auth-Services/internal/routes"
-
-    _ "github.com/bayuTri-Code/Auth-Services/cmd/api/docs" 
-    ginSwagger "github.com/swaggo/gin-swagger"
-    swaggerFiles "github.com/swaggo/files"
+	_ "github.com/bayuTri-Code/BE-Recipe/cmd/api/docs"
+	"github.com/bayuTri-Code/BE-Recipe/database"
+	"github.com/bayuTri-Code/BE-Recipe/internal/config"
+	"github.com/bayuTri-Code/BE-Recipe/internal/routes"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title Auth Service API
@@ -17,19 +16,21 @@ import (
 // @description API documentation for Auth Service
 // @host localhost:8080
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
-    config.ConfigDb()
-    database.PostgresConn()
+	config.ConfigDb()
+	db := database.PostgresConn() // ini harus return *gorm.DB
 
-    // routes
-    r := routes.Routes()
 
-    // Swagger route
-    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r := routes.Routes(db)
 
-    host := "0.0.0.0"
-    port := "8080"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-    fmt.Printf("server is running in http://%s:%s\n", host, port)
-    r.Run(host + ":" + port)
+	host := "0.0.0.0"
+	port := "8080"
+
+	fmt.Printf("server is running in http://%s:%s\n", host, port)
+	r.Run(host + ":" + port)
 }

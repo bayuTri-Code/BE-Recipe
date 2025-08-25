@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"github.com/bayuTri-Code/Auth-Services/internal/models"
-	"github.com/bayuTri-Code/Auth-Services/internal/services"
-	"github.com/bayuTri-Code/Auth-Services/internal/utils"
+	"github.com/bayuTri-Code/BE-Recipe/internal/models"
+	"github.com/bayuTri-Code/BE-Recipe/internal/services"
+	"github.com/bayuTri-Code/BE-Recipe/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 

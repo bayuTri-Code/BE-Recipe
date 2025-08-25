@@ -1,4 +1,4 @@
-module github.com/bayuTri-Code/Auth-Services
+module github.com/bayuTri-Code/BE-Recipe
 
 go 1.24.5
 
