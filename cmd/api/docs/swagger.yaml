@@ -167,6 +167,61 @@ info:
   title: Auth Service API
   version: "1.0"
 paths:
+  /api/{id}/favorites/{user_id}:
+    delete:
+      description: Delete a favorite by ID
+      parameters:
+      - description: Favorite ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove recipe from favorites
+      tags:
+      - Favorites
+  /api/{user_id}/favorites:
+    post:
+      consumes:
+      - application/json
+      description: Add a recipe to user's favorite list
+      parameters:
+      - description: Favorite Data
+        in: body
+        name: favorite
+        required: true
+        schema:
+          $ref: '#/definitions/models.Favorite'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Favorite'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add recipe to favorites
+      tags:
+      - Favorites
   /api/favorites:
     get:
       consumes:
@@ -206,60 +261,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Get all favorite recipes by user
-      tags:
-      - Favorites
-    post:
-      consumes:
-      - application/json
-      description: Add a recipe to user's favorite list
-      parameters:
-      - description: Favorite Data
-        in: body
-        name: favorite
-        required: true
-        schema:
-          $ref: '#/definitions/models.Favorite'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Favorite'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add recipe to favorites
-      tags:
-      - Favorites
-  /api/favorites/{id}:
-    delete:
-      description: Delete a favorite by ID
-      parameters:
-      - description: Favorite ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Remove recipe from favorites
       tags:
       - Favorites
   /api/recipes:

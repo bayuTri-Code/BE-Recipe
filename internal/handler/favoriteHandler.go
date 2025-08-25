@@ -26,7 +26,7 @@ func NewFavoriteHandler(s *services.FavoriteService) *FavoriteHandler {
 // @Param favorite body models.Favorite true "Favorite Data"
 // @Success 201 {object} models.Favorite
 // @Failure 400 {object} map[string]string
-// @Router /api/favorites [post]
+// @Router /api/{user_id}/favorites [post]
 func (h *FavoriteHandler) AddFavorite(c *gin.Context) {
 	recipeID := c.Param("id")
 	var req dto.AddFavoriteRequest
@@ -54,7 +54,7 @@ func (h *FavoriteHandler) AddFavorite(c *gin.Context) {
 // @Param id path string true "Favorite ID"
 // @Success 200 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /api/favorites/{id} [delete]
+// @Router /api/{id}/favorites/{user_id} [delete]
 func (h *FavoriteHandler) RemoveFavorite(c *gin.Context) {
 	recipeID := c.Param("id")
 	userIDStr := c.Param("user_id")
