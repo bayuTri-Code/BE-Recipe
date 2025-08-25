@@ -16,7 +16,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-// ---- Recipe & Children ----
 type Recipe struct {
 	ID          uuid.UUID      `gorm:"type:char(36);primaryKey" json:"id"`
 	Title       string         `gorm:"not null" json:"title"`
@@ -92,13 +91,9 @@ type Favorite struct {
 	UserID   uuid.UUID `gorm:"type:char(36);index" json:"user_id"`
 	RecipeID uuid.UUID `gorm:"type:char(36);index" json:"recipe_id"`
 
-	// Unique user-recipe pair
+	
 	_ struct{} `gorm:"uniqueIndex:uniq_fav_user_recipe,priority:1"`
-	// We need tag on each field for composite unique
-	// GORM v2 uses struct tags on fields; apply like below:
-	// Re-define indexes with tags on fields:
-	// UserID:   gorm:"type:char(36);index;uniqueIndex:uniq_fav_user_recipe,priority:1"
-	// RecipeID: gorm:"type:char(36);index;uniqueIndex:uniq_fav_user_recipe,priority:2"
+	
 }
 
 func (f *Favorite) BeforeCreate(tx *gorm.DB) (err error) {
