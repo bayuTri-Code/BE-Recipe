@@ -21,7 +21,7 @@ import (
 // @name Authorization
 func main() {
 	config.ConfigDb()
-	db := database.PostgresConn() // ini harus return *gorm.DB
+	db := database.PostgresConn()
 
 
 	r := routes.Routes(db)

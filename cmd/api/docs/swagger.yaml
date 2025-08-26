@@ -278,6 +278,34 @@ paths:
       summary: Get all recipes
       tags:
       - Recipes
+    post:
+      consumes:
+      - application/json
+      description: Create a new recipe with title, description, category, prep_time,
+        cook_time
+      parameters:
+      - description: Recipe Data
+        in: body
+        name: recipe
+        required: true
+        schema:
+          $ref: '#/definitions/models.Recipe'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Recipe'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new recipe
+      tags:
+      - Recipes
   /api/recipes/{id}:
     delete:
       description: Delete a recipe by ID

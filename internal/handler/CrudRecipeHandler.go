@@ -27,7 +27,6 @@ func NewRecipeHandler(s *services.RecipeService) *RecipeHandler {
 // @Success 201 {object} models.Recipe
 // @Failure 400 {object} map[string]string
 // @Router /api/recipes [post]
-
 func (h *RecipeHandler) CreateRecipe(c *gin.Context) {
 	var req dto.CreateRecipeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
