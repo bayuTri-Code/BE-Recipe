@@ -13,7 +13,7 @@ import (
 
 // @title Recipe API
 // @version 1.0
-// @description API documentation for Auth Service
+// @description API documentation for recipe API
 // @host http://192.168.100.247:8080
 // @BasePath /
 // @securityDefinitions.apikey BearerAuth

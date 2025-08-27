@@ -716,7 +716,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Recipe API",
-	Description:      "API documentation for Auth Service",
+	Description:      "API documentation for recipe API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

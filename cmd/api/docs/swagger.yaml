@@ -163,7 +163,7 @@ definitions:
 host: http://192.168.100.247:8080
 info:
   contact: {}
-  description: API documentation for Auth Service
+  description: API documentation for recipe API
   title: Recipe API
   version: "1.0"
 paths:
