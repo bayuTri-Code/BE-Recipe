@@ -160,7 +160,7 @@ definitions:
       name:
         type: string
     type: object
-host: localhost:8080
+host: http://192.168.100.247:8080
 info:
   contact: {}
   description: API documentation for Auth Service
