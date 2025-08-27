@@ -11,7 +11,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title Auth Service API
+// @title Recipe API
 // @version 1.0
 // @description API documentation for Auth Service
 // @host http://192.168.100.247:8080
