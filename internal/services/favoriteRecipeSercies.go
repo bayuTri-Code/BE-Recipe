@@ -1,9 +1,8 @@
 package services
 
 import (
-	"errors"
+	"fmt"
 
-	"github.com/bayuTri-Code/BE-Recipe/database"
 	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -17,40 +16,85 @@ func NewFavoriteService(db *gorm.DB) *FavoriteService {
 	return &FavoriteService{DB: db}
 }
 
-
-func GetAllFavoritesService(userID string) ([]models.Favorite, error) {
+func (s *FavoriteService) GetAllFavorites(userID string) ([]models.Favorite, error) {
 	var favorites []models.Favorite
-	if err := database.Db.Preload("Recipe").Where("user_id = ?", userID).Find(&favorites).Error; err != nil {
+
+	
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID")
+	}
+
+	err = s.DB.
+		Preload("Recipe", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Preload("User").
+				Preload("Ingredients").
+				Preload("Steps", func(db *gorm.DB) *gorm.DB {
+					return db.Order("steps.number ASC")
+				}).
+				Preload("Photos").
+				Preload("Favorites")
+		}).
+		Where("user_id = ?", userUUID).
+		Find(&favorites).Error
+
+	if err != nil {
 		return nil, err
 	}
 	return favorites, nil
 }
 
-func (s *FavoriteService) AddFavorite(recipeID string, userID uuid.UUID) error {
-	var r models.Recipe
-	if err := s.DB.First(&r, "id = ?", recipeID).Error; err != nil {
-		return errors.New("recipe not found")
-	}
-	var u models.User
-	if err := s.DB.First(&u, "id = ?", userID).Error; err != nil {
-		return errors.New("user not found")
+
+func (s *FavoriteService) AddFavoriteService(userID, recipeID string) (bool, error) {
+	recipeUUID, err := uuid.Parse(recipeID)
+	if err != nil {
+		return false, fmt.Errorf("invalid recipe ID")
 	}
 
-	var existing models.Favorite
-	if err := s.DB.First(&existing, "user_id = ? AND recipe_id = ?", userID, r.ID).Error; err == nil {
-		return nil 
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return false, fmt.Errorf("invalid user ID")
 	}
 
-	f := models.Favorite{
-		ID:       uuid.New(),
-		UserID:   userID,
-		RecipeID: r.ID,
+	var fav models.Favorite
+	err = s.DB.Where("user_id = ? AND recipe_id = ?", userUUID, recipeUUID).First(&fav).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
 	}
-	return s.DB.Create(&f).Error
+
+	if err == gorm.ErrRecordNotFound {
+		newFav := models.Favorite{
+			ID:       uuid.New(),
+			UserID:   userUUID,
+			RecipeID: recipeUUID,
+		}
+
+		if err := s.DB.Create(&newFav).Error; err != nil {
+			return false, err
+		}
+		return true, nil // added
+	}
+
+	
+	if err := s.DB.Delete(&fav).Error; err != nil {
+		return false, err
+	}
+	return false, nil // removed
 }
 
-func (s *FavoriteService) RemoveFavorite(recipeID string, userID uuid.UUID) error {
+func (s *FavoriteService) RemoveFavorite(userID, recipeID string) error {
+	userUUID, err := uuid.Parse(userID)
+	if err != nil {
+		return fmt.Errorf("invalid user ID")
+	}
+
+	recipeUUID, err := uuid.Parse(recipeID)
+	if err != nil {
+		return fmt.Errorf("invalid recipe ID")
+	}
+
 	return s.DB.
-		Where("user_id = ? AND recipe_id = ?", userID, recipeID).
+		Where("user_id = ? AND recipe_id = ?", userUUID, recipeUUID).
 		Delete(&models.Favorite{}).Error
 }

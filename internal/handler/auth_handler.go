@@ -37,7 +37,7 @@ func RegisterHandler(c *gin.Context) {
 			Message: "User created successfully",
 		},
 		Data: models.UserResponse{
-			ID:    user.ID.String(),
+			UserId:    user.ID.String(),
 			Name:  user.Name,
 			Email: user.Email,
 		},
@@ -79,9 +79,9 @@ func LoginHandler(c *gin.Context) {
 		},
 		Token: token,
 		Data: models.UserResponse{
-			ID:    user.ID.String(),
-			Name:  user.Name,
-			Email: user.Email,
+			UserId: user.ID.String(),
+			Name:   user.Name,
+			Email:  user.Email,
 		},
 	})
 }

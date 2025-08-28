@@ -29,7 +29,7 @@ type LoginResponse struct {
 }
 
 type UserResponse struct {
-    ID    string `json:"id"`
+    UserId    string `json:"user_id"`
     Name  string `json:"name"`
     Email string `json:"email"`
 }

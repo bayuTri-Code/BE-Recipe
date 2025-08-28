@@ -10,7 +10,6 @@ type CreateRecipeRequest struct {
 	PrepTime    int                `json:"prep_time"`
 	CookTime    int                `json:"cook_time"`
 	Servings    int                `json:"servings"`
-	UserID      uuid.UUID          `json:"user_id" binding:"required"`
 	Ingredients []IngredientInput  `json:"ingredients"` // optional, bisa kosong
 	Steps       []StepInput        `json:"steps"`       // optional
 	Photos      []PhotoInput       `json:"photos"`      // optional

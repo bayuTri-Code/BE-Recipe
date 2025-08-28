@@ -90,13 +90,13 @@ func toRecipeResponse(m models.Recipe) dto.RecipeResponse {
 }
 
 //crud
-func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest) (dto.RecipeResponse, error) {
+func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest, userID uuid.UUID) (dto.RecipeResponse, error) {
 	var out dto.RecipeResponse
 
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
-		// ensure user exists (optional but recommended)
+		
 		var user models.User
-		if err := tx.First(&user, "id = ?", req.UserID).Error; err != nil {
+		if err := tx.First(&user, "id = ?", userID).Error; err != nil {
 			return errors.New("user not found")
 		}
 
@@ -108,12 +108,15 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest) (dto.RecipeRes
 			PrepTime:    req.PrepTime,
 			CookTime:    req.CookTime,
 			Servings:    req.Servings,
-			UserID:      req.UserID,
+			UserID:      userID, 
 		}
+
+		// save recipe
 		if err := tx.Create(&recipe).Error; err != nil {
 			return err
 		}
 
+		// ingredients
 		if len(req.Ingredients) > 0 {
 			ings := make([]models.Ingredient, 0, len(req.Ingredients))
 			for _, in := range req.Ingredients {
@@ -130,6 +133,7 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest) (dto.RecipeRes
 			recipe.Ingredients = ings
 		}
 
+		// steps
 		if len(req.Steps) > 0 {
 			steps := make([]models.Step, 0, len(req.Steps))
 			for _, st := range req.Steps {
@@ -146,6 +150,7 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest) (dto.RecipeRes
 			recipe.Steps = steps
 		}
 
+		// photos
 		if len(req.Photos) > 0 {
 			photos := make([]models.Photo, 0, len(req.Photos))
 			for _, ph := range req.Photos {
@@ -168,6 +173,8 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest) (dto.RecipeRes
 
 	return out, err
 }
+
+
 
 func (s *RecipeService) GetAllRecipes() ([]dto.RecipeResponse, error) {
 	var list []models.Recipe
@@ -325,4 +332,29 @@ func DeleteRecipeService(id string) error {
     }
 
     return nil
+}
+
+func (s *RecipeService) GetRecipesByUserID(userID string) ([]dto.RecipeResponse, error) {
+	var recipes []models.Recipe
+
+	err := s.DB.
+		Preload("User").
+		Preload("Ingredients").
+		Preload("Steps", func(db *gorm.DB) *gorm.DB {
+			return db.Order("steps.number ASC") // urutkan steps
+		}).
+		Preload("Photos").
+		Preload("Favorites").
+		Where("user_id = ?", userID).
+		Find(&recipes).Error
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]dto.RecipeResponse, 0, len(recipes))
+	for _, r := range recipes {
+		out = append(out, toRecipeResponse(r))
+	}
+
+	return out, nil
 }

@@ -1,9 +1,70 @@
 basePath: /
 definitions:
+  dto.CreateRecipeRequest:
+    properties:
+      category:
+        type: string
+      cook_time:
+        type: integer
+      description:
+        type: string
+      ingredients:
+        description: optional, bisa kosong
+        items:
+          $ref: '#/definitions/dto.IngredientInput'
+        type: array
+      photos:
+        description: optional
+        items:
+          $ref: '#/definitions/dto.PhotoInput'
+        type: array
+      prep_time:
+        type: integer
+      servings:
+        type: integer
+      steps:
+        description: optional
+        items:
+          $ref: '#/definitions/dto.StepInput'
+        type: array
+      title:
+        type: string
+    required:
+    - title
+    type: object
+  dto.IngredientInput:
+    properties:
+      amount:
+        type: string
+      name:
+        type: string
+    required:
+    - amount
+    - name
+    type: object
+  dto.PhotoInput:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  dto.StepInput:
+    properties:
+      detail:
+        type: string
+      number:
+        type: integer
+    required:
+    - detail
+    - number
+    type: object
   models.Favorite:
     properties:
       id:
         type: string
+      recipe:
+        $ref: '#/definitions/models.Recipe'
       recipe_id:
         type: string
       user_id:
@@ -155,9 +216,9 @@ definitions:
     properties:
       email:
         type: string
-      id:
-        type: string
       name:
+        type: string
+      user_id:
         type: string
     type: object
 host: http://192.168.100.247:8080
@@ -167,66 +228,9 @@ info:
   title: Recipe API
   version: "1.0"
 paths:
-  /api/{id}/favorites/{user_id}:
-    delete:
-      description: Delete a favorite by ID
-      parameters:
-      - description: Favorite ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Remove recipe from favorites
-      tags:
-      - Favorites
-  /api/{user_id}/favorites:
-    post:
-      consumes:
-      - application/json
-      description: Add a recipe to user's favorite list
-      parameters:
-      - description: Favorite Data
-        in: body
-        name: favorite
-        required: true
-        schema:
-          $ref: '#/definitions/models.Favorite'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Favorite'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add recipe to favorites
-      tags:
-      - Favorites
-  /api/favorites:
+  /api/myrecipes:
     get:
-      consumes:
-      - application/json
-      description: Get all favorite recipes of the logged in user
+      description: Get all recipes created by the authenticated user
       produces:
       - application/json
       responses:
@@ -234,35 +238,19 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Favorite'
+              $ref: '#/definitions/models.Recipe'
             type: array
         "401":
           description: Unauthorized
           schema:
             additionalProperties:
-              allOf:
-              - type: string
-              - properties:
-                  error:
-                    type: string
-                type: object
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              allOf:
-              - type: string
-              - properties:
-                  error:
-                    type: string
-                type: object
+              type: string
             type: object
       security:
       - BearerAuth: []
-      summary: Get all favorite recipes by user
+      summary: Get my recipes
       tags:
-      - Favorites
+      - Recipes
   /api/recipes:
     get:
       description: Retrieve all available recipes
@@ -275,21 +263,21 @@ paths:
             items:
               $ref: '#/definitions/models.Recipe'
             type: array
-      summary: Get all recipes
+      summary: Get all recipes for all users
       tags:
       - Recipes
     post:
       consumes:
       - application/json
       description: Create a new recipe with title, description, category, prep_time,
-        cook_time
+        cook_time and ingredients and steps for the logged-in user
       parameters:
       - description: Recipe Data
         in: body
         name: recipe
         required: true
         schema:
-          $ref: '#/definitions/models.Recipe'
+          $ref: '#/definitions/dto.CreateRecipeRequest'
       produces:
       - application/json
       responses:
@@ -303,7 +291,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create a new recipe
+      summary: Create a new recipe by the authenticated user
       tags:
       - Recipes
   /api/recipes/{id}:
@@ -395,6 +383,114 @@ paths:
       summary: Update recipe
       tags:
       - Recipes
+  /api/recipes/{recipe_id}/favorites:
+    delete:
+      description: Explicitly remove recipe from user's favorites
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove recipe from favorites
+      tags:
+      - Favorites
+    post:
+      description: Add to favorites if not exists, remove if already favorited
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add recipe favorite
+      tags:
+      - Favorites
+  /api/recipes/favorites:
+    get:
+      consumes:
+      - application/json
+      description: Get all favorite recipes of the logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Favorite'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all favorite recipes by user
+      tags:
+      - Favorites
   /auth/login:
     post:
       consumes:

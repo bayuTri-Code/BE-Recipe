@@ -15,14 +15,115 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/favorites": {
+        "/api/myrecipes": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get all favorite recipes of the logged in user",
+                "description": "Get all recipes created by the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Get my recipes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Recipe"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/recipes": {
+            "get": {
+                "description": "Retrieve all available recipes",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Get all recipes for all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Recipe"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new recipe with title, description, category, prep_time, cook_time and ingredients and steps for the logged-in user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Create a new recipe by the authenticated user",
+                "parameters": [
+                    {
+                        "description": "Recipe Data",
+                        "name": "recipe",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateRecipeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Recipe"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/recipes/favorites": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all favorite recipes of the logged-in user",
                 "consumes": [
                     "application/json"
                 ],
@@ -48,100 +149,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "allOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "error": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
+                                "type": "string"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "allOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "error": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/recipes": {
-            "get": {
-                "description": "Retrieve all available recipes",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Recipes"
-                ],
-                "summary": "Get all recipes",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Recipe"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new recipe with title, description, category, prep_time, cook_time",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Recipes"
-                ],
-                "summary": "Create a new recipe",
-                "parameters": [
-                    {
-                        "description": "Recipe Data",
-                        "name": "recipe",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Recipe"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Recipe"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -286,21 +299,26 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/{id}/favorites/{user_id}": {
-            "delete": {
-                "description": "Delete a favorite by ID",
+        "/api/recipes/{recipe_id}/favorites": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Add to favorites if not exists, remove if already favorited",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Favorites"
                 ],
-                "summary": "Remove recipe from favorites",
+                "summary": "Add recipe favorite",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Favorite ID",
-                        "name": "id",
+                        "description": "Recipe ID",
+                        "name": "recipe_id",
                         "in": "path",
                         "required": true
                     }
@@ -315,8 +333,26 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -325,41 +361,54 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/{user_id}/favorites": {
-            "post": {
-                "description": "Add a recipe to user's favorite list",
-                "consumes": [
-                    "application/json"
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
                 ],
+                "description": "Explicitly remove recipe from user's favorites",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Favorites"
                 ],
-                "summary": "Add recipe to favorites",
+                "summary": "Remove recipe from favorites",
                 "parameters": [
                     {
-                        "description": "Favorite Data",
-                        "name": "favorite",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Favorite"
-                        }
+                        "type": "string",
+                        "description": "Recipe ID",
+                        "name": "recipe_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Favorite"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -452,11 +501,102 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CreateRecipeRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "cook_time": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "ingredients": {
+                    "description": "optional, bisa kosong",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.IngredientInput"
+                    }
+                },
+                "photos": {
+                    "description": "optional",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PhotoInput"
+                    }
+                },
+                "prep_time": {
+                    "type": "integer"
+                },
+                "servings": {
+                    "type": "integer"
+                },
+                "steps": {
+                    "description": "optional",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StepInput"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.IngredientInput": {
+            "type": "object",
+            "required": [
+                "amount",
+                "name"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PhotoInput": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.StepInput": {
+            "type": "object",
+            "required": [
+                "detail",
+                "number"
+            ],
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.Favorite": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
+                },
+                "recipe": {
+                    "$ref": "#/definitions/models.Recipe"
                 },
                 "recipe_id": {
                     "type": "string"
@@ -691,10 +831,10 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "id": {
+                "name": {
                     "type": "string"
                 },
-                "name": {
+                "user_id": {
                     "type": "string"
                 }
             }

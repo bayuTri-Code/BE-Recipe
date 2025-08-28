@@ -3,10 +3,8 @@ package handler
 import (
 	"net/http"
 
-	dto "github.com/bayuTri-Code/BE-Recipe/internal/DTO"
 	"github.com/bayuTri-Code/BE-Recipe/internal/services"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type FavoriteHandler struct {
@@ -17,78 +15,98 @@ func NewFavoriteHandler(s *services.FavoriteService) *FavoriteHandler {
 	return &FavoriteHandler{Service: s}
 }
 
-// AddFavorite godoc
-// @Summary Add recipe to favorites
-// @Description Add a recipe to user's favorite list
-// @Tags Favorites
-// @Accept json
-// @Produce json
-// @Param favorite body models.Favorite true "Favorite Data"
-// @Success 201 {object} models.Favorite
-// @Failure 400 {object} map[string]string
-// @Router /api/{user_id}/favorites [post]
-func (h *FavoriteHandler) AddFavorite(c *gin.Context) {
-	recipeID := c.Param("id")
-	var req dto.AddFavoriteRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// ToggleFavorite godoc
+// @Summary      Add recipe favorite
+// @Description  Add to favorites if not exists, remove if already favorited
+// @Tags         Favorites
+// @Produce      json
+// @Security     BearerAuth
+// @Param        recipe_id   path      string  true  "Recipe ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/recipes/{recipe_id}/favorites [post]
+func (h *FavoriteHandler) AddFavoriteHandler(c *gin.Context) {
+	recipeID := c.Param("recipe_id")
+	if recipeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "recipe_id is required"})
 		return
 	}
-	if req.UserID == uuid.Nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id is required"})
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	if err := h.Service.AddFavorite(recipeID, req.UserID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	added, err := h.Service.AddFavoriteService(userID.(string), recipeID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.Status(http.StatusCreated)
+
+	if added {
+		c.JSON(http.StatusOK, gin.H{"message": "recipe added to favorites"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "recipe removed from favorites"})
+	}
 }
 
-
-// DeleteFavorite godoc
-// @Summary Remove recipe from favorites
-// @Description Delete a favorite by ID
-// @Tags Favorites
-// @Produce json
-// @Param id path string true "Favorite ID"
-// @Success 200 {object} map[string]string
-// @Failure 404 {object} map[string]string
-// @Router /api/{id}/favorites/{user_id} [delete]
+// RemoveFavorite godoc
+// @Summary      Remove recipe from favorites
+// @Description  Explicitly remove recipe from user's favorites
+// @Tags         Favorites
+// @Produce      json
+// @Security     BearerAuth
+// @Param        recipe_id   path      string  true  "Recipe ID"
+// @Success      204  {object}  nil
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/recipes/{recipe_id}/favorites [delete]
 func (h *FavoriteHandler) RemoveFavorite(c *gin.Context) {
-	recipeID := c.Param("id")
-	userIDStr := c.Param("user_id")
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
+	recipeID := c.Param("recipe_id")
+	if recipeID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "recipe_id is required"})
 		return
 	}
-	if err := h.Service.RemoveFavorite(recipeID, userID); err != nil {
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	if err := h.Service.RemoveFavorite(userID.(string), recipeID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to remove favorite"})
 		return
 	}
+
 	c.Status(http.StatusNoContent)
 }
 
-
-
 // GetAllFavorites godoc
 // @Summary      Get all favorite recipes by user
-// @Description  Get all favorite recipes of the logged in user
+// @Description  Get all favorite recipes of the logged-in user
 // @Tags         Favorites
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Success      200  {array}   models.Favorite
-// @Failure      401  {object}  map[string]string{error=string}
-// @Failure      500  {object}  map[string]string{error=string}
-// @Router       /api/favorites [get]
-func GetAllFavorites(c *gin.Context) {
-	userID := c.MustGet("userID").(string)
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/recipes/favorites [get]
+func (h *FavoriteHandler) GetAllFavorites(c *gin.Context) {
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
-	favorites, err := services.GetAllFavoritesService(userID)
+	favorites, err := h.Service.GetAllFavorites(userID.(string))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get favorites"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get favorites: " + err.Error()})
 		return
 	}
 

@@ -18,8 +18,8 @@ import (
 )
 
 type Claims struct {
-	ID   uuid.UUID `json:"id"`
-	Email string `json:"email"`
+	UserId    uuid.UUID `json:"user_id"`
+	Email string    `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -63,7 +63,6 @@ func RegisterServices(ctx context.Context, Name, Email, Password string) (*model
 	return registerUser, nil
 }
 
-
 func LoginServices(email, password string) (string, error) {
 	var user models.User
 
@@ -74,7 +73,7 @@ func LoginServices(email, password string) (string, error) {
 
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &Claims{
-		ID:   user.ID,
+		UserId:    user.ID,
 		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -89,7 +88,6 @@ func LoginServices(email, password string) (string, error) {
 
 	return tokenString, nil
 }
-
 
 func GetUserByEmail(email string) (*models.User, error) {
 	var user models.User

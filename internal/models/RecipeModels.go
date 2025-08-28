@@ -91,10 +91,11 @@ type Favorite struct {
 	UserID   uuid.UUID `gorm:"type:char(36);index" json:"user_id"`
 	RecipeID uuid.UUID `gorm:"type:char(36);index" json:"recipe_id"`
 
-	
 	_ struct{} `gorm:"uniqueIndex:uniq_fav_user_recipe,priority:1"`
-	
+
+	Recipe Recipe `gorm:"foreignKey:RecipeID;references:ID" json:"recipe"`
 }
+
 
 func (f *Favorite) BeforeCreate(tx *gorm.DB) (err error) {
 	if f.ID == uuid.Nil {

@@ -16,14 +16,14 @@ func Routes(db *gorm.DB) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 
-	// CORS 
+	// CORS
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://192.168.100.8:3000" ,"http://127.0.0.1:5173"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://192.168.100.8:3000", "http://127.0.0.1:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-	})) 
+	}))
 
 	err := r.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
@@ -57,10 +57,13 @@ func Routes(db *gorm.DB) *gin.Engine {
 		apiRecipe.PUT("/recipes/:id", recipeHandler.UpdateRecipe)
 		apiRecipe.DELETE("/recipes/:id", recipeHandler.DeleteRecipe)
 
+
+		apiRecipe.GET("/myrecipes", recipeHandler.GetMyRecipes)
+
 		// Favorites
-		apiRecipe.POST("/recipes/:id/favorites", favoriteHandler.AddFavorite)
+		apiRecipe.POST("/recipes/:recipe_id/favorites", favoriteHandler.AddFavoriteHandler)
 		apiRecipe.DELETE("/recipes/:id/favorites/:user_id", favoriteHandler.RemoveFavorite)
-		apiRecipe.GET("/favorites", handler.GetAllFavorites)
+		apiRecipe.GET("/recipes/favorites", favoriteHandler.GetAllFavorites)
 	}
 	return r
 }
