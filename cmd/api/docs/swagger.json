@@ -300,14 +300,14 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Add to favorites if not exists, remove if already favorited",
+                "description": "This endpoint will add the recipe to user's favorites if it is not already favorited.\nIf the recipe is already in favorites, it will remove it instead.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Favorites"
                 ],
-                "summary": "Add recipe favorite",
+                "summary": "post recipe favorite",
                 "parameters": [
                     {
                         "type": "string",
@@ -319,7 +319,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "message: 'Added to favorites' or 'Removed from favorites'",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -328,7 +328,7 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid recipe ID",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -346,63 +346,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Explicitly remove recipe from user's favorites",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Favorites"
-                ],
-                "summary": "Remove recipe from favorites",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Recipe ID",
-                        "name": "recipe_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {

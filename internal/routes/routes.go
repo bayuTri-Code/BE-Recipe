@@ -62,8 +62,8 @@ func Routes(db *gorm.DB) *gin.Engine {
 
 		// Favorites
 		apiRecipe.POST("/recipes/:recipe_id/favorites", favoriteHandler.AddFavoriteHandler)
-		apiRecipe.DELETE("/recipes/:id/favorites/:user_id", favoriteHandler.RemoveFavorite)
 		apiRecipe.GET("/recipes/favorites", favoriteHandler.GetAllFavorites)
+		// apiRecipe.DELETE("/recipes/:id/favorites/:user_id", favoriteHandler.RemoveFavorite)
 	}
 	return r
 }

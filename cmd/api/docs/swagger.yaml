@@ -384,44 +384,10 @@ paths:
       tags:
       - Recipes
   /api/recipes/{recipe_id}/favorites:
-    delete:
-      description: Explicitly remove recipe from user's favorites
-      parameters:
-      - description: Recipe ID
-        in: path
-        name: recipe_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Remove recipe from favorites
-      tags:
-      - Favorites
     post:
-      description: Add to favorites if not exists, remove if already favorited
+      description: |-
+        This endpoint will add the recipe to user's favorites if it is not already favorited.
+        If the recipe is already in favorites, it will remove it instead.
       parameters:
       - description: Recipe ID
         in: path
@@ -432,13 +398,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 'message: ''Added to favorites'' or ''Removed from favorites'''
           schema:
             additionalProperties:
               type: string
             type: object
         "400":
-          description: Bad Request
+          description: Invalid recipe ID
           schema:
             additionalProperties:
               type: string
@@ -450,14 +416,14 @@ paths:
               type: string
             type: object
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
             additionalProperties:
               type: string
             type: object
       security:
       - BearerAuth: []
-      summary: Add recipe favorite
+      summary: post recipe favorite
       tags:
       - Favorites
   /api/recipes/favorites:

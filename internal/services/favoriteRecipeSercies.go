@@ -73,14 +73,14 @@ func (s *FavoriteService) AddFavoriteService(userID, recipeID string) (bool, err
 		if err := s.DB.Create(&newFav).Error; err != nil {
 			return false, err
 		}
-		return true, nil // added
+		return true, nil 
 	}
 
 	
 	if err := s.DB.Delete(&fav).Error; err != nil {
 		return false, err
 	}
-	return false, nil // removed
+	return false, nil 
 }
 
 func (s *FavoriteService) RemoveFavorite(userID, recipeID string) error {
