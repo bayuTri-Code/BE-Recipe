@@ -89,6 +89,18 @@ func LoginHandler(c *gin.Context) {
 }
 
 
+// LogoutHandler godoc
+// @Summary Logout user
+// @Description Blacklist token from Authorization header
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]string{message=string}
+// @Failure 400 {object} map[string]string{error=string}
+// @Failure 401 {object} map[string]string{error=string}
+// @Failure 500 {object} map[string]string{error=string}
+// @Router /logout [post]
 func LogoutHandler(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {

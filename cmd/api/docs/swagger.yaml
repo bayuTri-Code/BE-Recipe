@@ -509,6 +509,63 @@ paths:
       summary: Register user
       tags:
       - Auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Blacklist token from Authorization header
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              allOf:
+              - type: string
+              - properties:
+                  message:
+                    type: string
+                type: object
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              allOf:
+              - type: string
+              - properties:
+                  error:
+                    type: string
+                type: object
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              allOf:
+              - type: string
+              - properties:
+                  error:
+                    type: string
+                type: object
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              allOf:
+              - type: string
+              - properties:
+                  error:
+                    type: string
+                type: object
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - Auth
 securityDefinitions:
   BearerAuth:
     in: header

@@ -74,7 +74,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		userID, ok := claims["user_id"].(string)
-		if !ok {
+		if !ok {   
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token payload"})
 			c.Abort()
 			return
