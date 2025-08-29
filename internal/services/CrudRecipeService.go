@@ -111,12 +111,10 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest, userID uuid.UU
 			UserID:      userID, 
 		}
 
-		// save recipe
 		if err := tx.Create(&recipe).Error; err != nil {
 			return err
 		}
 
-		// ingredients
 		if len(req.Ingredients) > 0 {
 			ings := make([]models.Ingredient, 0, len(req.Ingredients))
 			for _, in := range req.Ingredients {
@@ -133,7 +131,6 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest, userID uuid.UU
 			recipe.Ingredients = ings
 		}
 
-		// steps
 		if len(req.Steps) > 0 {
 			steps := make([]models.Step, 0, len(req.Steps))
 			for _, st := range req.Steps {
@@ -150,7 +147,6 @@ func (s *RecipeService) CreateRecipe(req dto.CreateRecipeRequest, userID uuid.UU
 			recipe.Steps = steps
 		}
 
-		// photos
 		if len(req.Photos) > 0 {
 			photos := make([]models.Photo, 0, len(req.Photos))
 			for _, ph := range req.Photos {
@@ -320,6 +316,7 @@ func (s *RecipeService) UpdateRecipe(id string, req dto.UpdateRecipeRequest) (dt
 	})
 	return out, err
 }
+
 func DeleteRecipeService(id string) error {
     var recipe models.Recipe
 

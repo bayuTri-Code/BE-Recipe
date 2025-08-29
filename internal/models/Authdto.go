@@ -1,5 +1,11 @@
 package models
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type RegisterRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required"`
@@ -37,4 +43,11 @@ type UserResponse struct {
 type ResponseError struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
+}
+
+type BlacklistedToken struct {
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Token     string    `gorm:"type:text;not null;unique"`
+	CreatedAt time.Time
+	ExpiresAt time.Time
 }

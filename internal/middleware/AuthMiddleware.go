@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bayuTri-Code/BE-Recipe/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -40,6 +41,18 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		tokenString := parts[1]
 
+		isBlacklisted, err := services.IsTokenBlacklisted(tokenString)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check blacklist"})
+			c.Abort()
+			return
+		}
+		if isBlacklisted {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token has been blacklisted"})
+			c.Abort()
+			return
+		}
+
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
@@ -67,7 +80,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Simpan userID ke context untuk dipakai di handler
 		c.Set("userID", userID)
 
 		c.Next()

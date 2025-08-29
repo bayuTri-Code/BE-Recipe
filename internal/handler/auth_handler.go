@@ -2,11 +2,13 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"github.com/bayuTri-Code/BE-Recipe/internal/services"
 	"github.com/bayuTri-Code/BE-Recipe/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // @Summary Register user
@@ -83,5 +85,51 @@ func LoginHandler(c *gin.Context) {
 			Name:   user.Name,
 			Email:  user.Email,
 		},
+	})
+}
+
+
+func LogoutHandler(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+		return
+	}
+
+	var tokenString string
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		tokenString = authHeader
+	}
+
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot parse claims"})
+		return
+	}
+
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "exp not found in token"})
+		return
+	}
+
+	expiresAt := time.Unix(int64(exp), 0)
+
+	err = services.BlacklistToken(tokenString, expiresAt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to blacklist token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Logout successful, token blacklisted",
 	})
 }

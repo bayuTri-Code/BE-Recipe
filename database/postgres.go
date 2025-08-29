@@ -46,6 +46,7 @@ func autoMigrate(db *gorm.DB) {
 		&models.Step{},
 		&models.Photo{},
 		&models.Favorite{},
+		&models.BlacklistedToken{},
 	)
 
 	if err != nil {

@@ -26,3 +26,4 @@ func ResponseSuccess(c *gin.Context, status int, data interface{}) {
 func Logger() *log.Logger {
 	return log.New(os.Stdout, "", log.LstdFlags|log.Lmsgprefix)
 }
+

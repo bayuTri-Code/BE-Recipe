@@ -97,3 +97,35 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+
+
+
+func BlacklistToken(tokenString string, expiresAt time.Time) error {
+	db := database.Db
+
+	blacklisted := models.BlacklistedToken{
+		ID:        uuid.New(),
+		Token:     tokenString,
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
+	}
+
+	if err := db.Create(&blacklisted).Error; err != nil {
+		return fmt.Errorf("failed to blacklist token: %v", err)
+	}
+	return nil
+}
+
+func IsTokenBlacklisted(tokenString string) (bool, error) {
+	db := database.Db
+	var token models.BlacklistedToken
+	err := db.Where("token = ?", tokenString).First(&token).Error
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}

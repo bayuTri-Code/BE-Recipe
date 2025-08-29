@@ -36,17 +36,24 @@ func Routes(db *gorm.DB) *gin.Engine {
 		})
 	})
 
+	
+
+	//Auth routes
+	auth := r.Group("/auth")
+	{
+		auth.POST("/register", handler.RegisterHandler)
+		auth.POST("/login", handler.LoginHandler)
+		auth.POST("/logout", handler.LogoutHandler)
+	}
+
+	// Recipe routes 
+
 	recipeService := services.NewRecipeService(db)
 	favoriteService := services.NewFavoriteService(db)
 
 	recipeHandler := handler.NewRecipeHandler(recipeService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 
-	auth := r.Group("/auth")
-	{
-		auth.POST("/register", handler.RegisterHandler)
-		auth.POST("/login", handler.LoginHandler)
-	}
 
 	apiRecipe := r.Group("/api")
 	apiRecipe.Use(middleware.AuthMiddleware())
