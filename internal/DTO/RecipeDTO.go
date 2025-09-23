@@ -10,7 +10,8 @@ type CreateRecipeRequest struct {
 	PrepTime    int                `json:"prep_time"`
 	CookTime    int                `json:"cook_time"`
 	Servings    int                `json:"servings"`
-	Ingredients []IngredientInput  `json:"ingredients"` // optional, bisa kosong
+	
+	Ingredients []IngredientInput  `json:"ingredients"` // optional
 	Steps       []StepInput        `json:"steps"`       // optional
 	Photos      []PhotoInput       `json:"photos"`      // optional
 }
@@ -22,7 +23,7 @@ type UpdateRecipeRequest struct {
 	PrepTime    *int               `json:"prep_time"`
 	CookTime    *int               `json:"cook_time"`
 	Servings    *int               `json:"servings"`
-	// Prinsip replace: bila array dikirim, kita hapus semua lama & buat ulang baru
+
 	Ingredients []IngredientInput  `json:"ingredients"`
 	Steps       []StepInput        `json:"steps"`
 	Photos      []PhotoInput       `json:"photos"`
