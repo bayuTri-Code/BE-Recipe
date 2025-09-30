@@ -18,8 +18,8 @@ import (
 )
 
 type Claims struct {
-	UserId    uuid.UUID `json:"user_id"`
-	Email string    `json:"email"`
+	UserId uuid.UUID `json:"user_id"`
+	Email  string    `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -73,10 +73,12 @@ func LoginServices(email, password string) (string, error) {
 
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &Claims{
-		UserId:    user.ID,
-		Email: user.Email,
+		UserId: user.ID,
+		Email:  user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			IssuedAt:  jwt.NewNumericDate(time.Now()), 
+			ID:        uuid.NewString(),
 		},
 	}
 
@@ -97,35 +99,38 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
-
-
-
-
 func BlacklistToken(tokenString string, expiresAt time.Time) error {
-	db := database.Db
+    fmt.Println("Blacklisting token:", tokenString)
 
-	blacklisted := models.BlacklistedToken{
-		ID:        uuid.New(),
-		Token:     tokenString,
-		CreatedAt: time.Now(),
-		ExpiresAt: expiresAt,
-	}
+    blacklisted := models.BlacklistedToken{
+        ID:        uuid.New(),
+        Token:     strings.TrimSpace(tokenString),
+        CreatedAt: time.Now(),
+        ExpiresAt: expiresAt,
+    }
 
-	if err := db.Create(&blacklisted).Error; err != nil {
-		return fmt.Errorf("failed to blacklist token: %v", err)
-	}
-	return nil
+    if err := database.Db.Create(&blacklisted).Error; err != nil {
+        fmt.Printf("Gagal blacklist: %v\n", err)
+        return fmt.Errorf("failed to blacklist token: %v", err)
+    }
+
+    fmt.Println("Token berhasil di-blacklist:", tokenString)
+    return nil
 }
 
 func IsTokenBlacklisted(tokenString string) (bool, error) {
-	db := database.Db
-	var token models.BlacklistedToken
-	err := db.Where("token = ?", tokenString).First(&token).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+    fmt.Println("Mengecek token di blacklist:", tokenString)
+
+    var token models.BlacklistedToken
+    err := database.Db.Where("token = ?", strings.TrimSpace(tokenString)).First(&token).Error
+
+    if err == gorm.ErrRecordNotFound {
+        return false, nil
+    }
+    if err != nil {
+        return false, err
+    }
+
+    fmt.Println("Token ditemukan di blacklist:", token.Token)
+    return true, nil
 }

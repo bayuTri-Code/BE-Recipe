@@ -20,12 +20,13 @@ import (
 // @in header
 // @name Authorization
 func main() {
+	// Load config & koneksi DB
 	config.ConfigDb()
 	db := database.PostgresConn()
 
-
 	r := routes.Routes(db)
 
+	// Swagger
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	host := "0.0.0.0"

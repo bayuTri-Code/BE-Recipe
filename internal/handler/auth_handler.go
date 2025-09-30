@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bayuTri-Code/BE-Recipe/internal/models"
@@ -102,46 +104,44 @@ func LoginHandler(c *gin.Context) {
 // @Failure 500 {object} map[string]string{error=string}
 // @Router /logout [post]
 func LogoutHandler(c *gin.Context) {
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-		return
-	}
+    authHeader := c.GetHeader("Authorization")
+    if authHeader == "" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+        return
+    }
 
-	var tokenString string
-	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-		tokenString = authHeader[7:]
-	} else {
-		tokenString = authHeader
-	}
+    parts := strings.Split(authHeader, " ")
+    if len(parts) != 2 || parts[0] != "Bearer" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+        return
+    }
+    tokenString := parts[1]
 
-	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
-		return
-	}
+    token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+        return
+    }
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot parse claims"})
-		return
-	}
+    claims, ok := token.Claims.(jwt.MapClaims)
+    if !ok {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "cannot parse claims"})
+        return
+    }
 
-	exp, ok := claims["exp"].(float64)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "exp not found in token"})
-		return
-	}
+    exp, ok := claims["exp"].(float64)
+    var expiresAt time.Time
+    if ok {
+        expiresAt = time.Unix(int64(exp), 0)
+    } else {
+        expiresAt = time.Now().Add(24 * time.Hour)
+    }
 
-	expiresAt := time.Unix(int64(exp), 0)
+    err = services.BlacklistToken(tokenString, expiresAt)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to blacklist token: %v", err)})
+        return
+    }
 
-	err = services.BlacklistToken(tokenString, expiresAt)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to blacklist token"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Logout successful, token blacklisted",
-	})
+    c.JSON(http.StatusOK, gin.H{"message": "Logout successful, token blacklisted"})
 }

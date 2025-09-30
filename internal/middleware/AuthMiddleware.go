@@ -17,6 +17,7 @@ func GenerateToken(userID string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"iat":     time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -39,7 +40,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		tokenString := parts[1]
+		tokenString := strings.TrimSpace(parts[1])
 
 		isBlacklisted, err := services.IsTokenBlacklisted(tokenString)
 		if err != nil {
@@ -59,7 +60,6 @@ func AuthMiddleware() gin.HandlerFunc {
 			}
 			return jwtSecret, nil
 		})
-
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 			c.Abort()
@@ -73,15 +73,22 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		if exp, ok := claims["exp"].(float64); ok {
+			if int64(exp) < time.Now().Unix() {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})
+				c.Abort()
+				return
+			}
+		}
+
 		userID, ok := claims["user_id"].(string)
-		if !ok {   
+		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token payload"})
 			c.Abort()
 			return
 		}
 
 		c.Set("userID", userID)
-
 		c.Next()
 	}
 }

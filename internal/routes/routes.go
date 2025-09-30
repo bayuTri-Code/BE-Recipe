@@ -18,7 +18,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 
 	// CORS
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://192.168.100.8:3000","http://recipe.com", "http://192.168.100.102:3000" ,"http://127.0.0.1:5173"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://192.168.100.8:3000", "http://recipe.com", "http://192.168.100.102:3000", "http://127.0.0.1:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -36,24 +36,20 @@ func Routes(db *gorm.DB) *gin.Engine {
 		})
 	})
 
-	
-
-	//Auth routes
+	// Auth routes
 	auth := r.Group("/auth")
 	{
 		auth.POST("/register", handler.RegisterHandler)
 		auth.POST("/login", handler.LoginHandler)
-		auth.POST("/logout", handler.LogoutHandler)
+		auth.POST("/logout", middleware.AuthMiddleware(), handler.LogoutHandler)
 	}
 
-	// Recipe routes 
-
+	// Recipe & Favorite routes
 	recipeService := services.NewRecipeService(db)
 	favoriteService := services.NewFavoriteService(db)
 
 	recipeHandler := handler.NewRecipeHandler(recipeService)
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
-
 
 	apiRecipe := r.Group("/api")
 	apiRecipe.Use(middleware.AuthMiddleware())
@@ -64,7 +60,6 @@ func Routes(db *gorm.DB) *gin.Engine {
 		apiRecipe.PUT("/recipes/:id", recipeHandler.UpdateRecipe)
 		apiRecipe.DELETE("/recipes/:id", recipeHandler.DeleteRecipe)
 
-
 		apiRecipe.GET("/myrecipes", recipeHandler.GetMyRecipes)
 
 		// Favorites
@@ -72,5 +67,16 @@ func Routes(db *gorm.DB) *gin.Engine {
 		apiRecipe.GET("/recipes/favorites", favoriteHandler.GetAllFavorites)
 		// apiRecipe.DELETE("/recipes/:id/favorites/:user_id", favoriteHandler.RemoveFavorite)
 	}
+
+	// Dashboard routes
+	dashboardService := services.NewDashboardService(db)
+	dashboardHandler := handler.NewDashboardHandler(dashboardService)
+
+	apiDashboard := r.Group("/api/page")
+	apiDashboard.Use(middleware.AuthMiddleware())
+	{
+		apiDashboard.GET("/dashboard", dashboardHandler.GetDashboard) 
+	}
+
 	return r
 }
