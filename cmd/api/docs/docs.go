@@ -71,8 +71,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.DashboardDTO"
                         }
                     },
                     "400": {
@@ -642,6 +641,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.DashboardDTO": {
+            "type": "object",
+            "properties": {
+                "stats": {
+                    "$ref": "#/definitions/dto.StatsDTO"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.IngredientInput": {
             "type": "object",
             "required": [
@@ -665,6 +675,17 @@ const docTemplate = `{
             "properties": {
                 "url": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.StatsDTO": {
+            "type": "object",
+            "properties": {
+                "numberOfFavorites": {
+                    "type": "integer"
+                },
+                "numberOfRecipes": {
+                    "type": "integer"
                 }
             }
         },

@@ -52,19 +52,19 @@ func Routes(db *gorm.DB) *gin.Engine {
 	favoriteHandler := handler.NewFavoriteHandler(favoriteService)
 
 	apiRecipe := r.Group("/api")
-	apiRecipe.Use(middleware.AuthMiddleware())
 	{
-		apiRecipe.POST("/recipes", recipeHandler.CreateRecipe)
 		apiRecipe.GET("/recipes", recipeHandler.GetAllRecipes)
-		apiRecipe.GET("/recipes/:id", recipeHandler.GetRecipeByID)
-		apiRecipe.PUT("/recipes/:id", recipeHandler.UpdateRecipe)
-		apiRecipe.DELETE("/recipes/:id", recipeHandler.DeleteRecipe)
 
-		apiRecipe.GET("/myrecipes", recipeHandler.GetMyRecipes)
+		apiRecipe.GET("/myrecipes", middleware.AuthMiddleware(), recipeHandler.GetMyRecipes)
+		apiRecipe.GET("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.GetRecipeByID)
+		apiRecipe.POST("/recipes", middleware.AuthMiddleware(), recipeHandler.CreateRecipe)
+		apiRecipe.PUT("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.UpdateRecipe)
+		apiRecipe.DELETE("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.DeleteRecipe)
+
 
 		// Favorites
-		apiRecipe.POST("/recipes/:recipe_id/favorites", favoriteHandler.AddFavoriteHandler)
-		apiRecipe.GET("/recipes/favorites", favoriteHandler.GetAllFavorites)
+		apiRecipe.GET("/recipes/favorites", middleware.AuthMiddleware(), favoriteHandler.GetAllFavorites)
+		apiRecipe.POST("/recipes/:recipe_id/favorites", middleware.AuthMiddleware(), favoriteHandler.AddFavoriteHandler)
 		// apiRecipe.DELETE("/recipes/:id/favorites/:user_id", favoriteHandler.RemoveFavorite)
 	}
 
@@ -75,7 +75,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 	apiDashboard := r.Group("/api/page")
 	apiDashboard.Use(middleware.AuthMiddleware())
 	{
-		apiDashboard.GET("/dashboard", dashboardHandler.GetDashboard) 
+		apiDashboard.GET("/dashboard", dashboardHandler.GetDashboard)
 	}
 
 	return r

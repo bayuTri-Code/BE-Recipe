@@ -32,6 +32,13 @@ definitions:
     required:
     - title
     type: object
+  dto.DashboardDTO:
+    properties:
+      stats:
+        $ref: '#/definitions/dto.StatsDTO'
+      username:
+        type: string
+    type: object
   dto.IngredientInput:
     properties:
       amount:
@@ -48,6 +55,13 @@ definitions:
         type: string
     required:
     - url
+    type: object
+  dto.StatsDTO:
+    properties:
+      numberOfFavorites:
+        type: integer
+      numberOfRecipes:
+        type: integer
     type: object
   dto.StepInput:
     properties:
@@ -265,8 +279,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.DashboardDTO'
         "400":
           description: Bad Request
           schema:

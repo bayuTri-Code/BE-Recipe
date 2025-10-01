@@ -19,13 +19,14 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+
 // GetDashboard godoc
 // @Summary Get user dashboard data
 // @Description Get user dashboard information including total recipes and favorites
 // @Tags Dashboard
 // @Security BearerAuth
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} dto.DashboardDTO
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse

@@ -16,7 +16,6 @@ func NewDashboardService(db *gorm.DB) *DashboardService {
 	return &DashboardService{DB: db}
 }
 
-// Ambil data dashboard user
 func (s *DashboardService) GetDashboardData(userID uuid.UUID) (map[string]interface{}, error) {
 	var user models.User
 	if err := s.DB.Preload("Recipes").Preload("Favorites").First(&user, "id = ?", userID).Error; err != nil {
@@ -29,8 +28,8 @@ func (s *DashboardService) GetDashboardData(userID uuid.UUID) (map[string]interf
 	dashboard := map[string]interface{}{
 		"username": user.Name,
 		"stats": map[string]int{
-			"totalRecipes": totalRecipes,
-			"favorites":    totalFavorites,
+			"numberOfRecipes": totalRecipes,
+			"numberOfFavorites":    totalFavorites,
 		},
 	}
 
