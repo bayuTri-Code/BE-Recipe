@@ -1,0 +1,3 @@
+# Ignore uploaded files in public/storage
+/public/storage/*
+!/public/storage/.gitkeep
