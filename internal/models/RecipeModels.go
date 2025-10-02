@@ -7,8 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
-
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	if u.ID == uuid.Nil {
 		u.ID = uuid.New()
@@ -24,13 +22,13 @@ type Recipe struct {
 	PrepTime    int            `json:"prep_time"`
 	CookTime    int            `json:"cook_time"`
 	Servings    int            `json:"servings"`
+	Thumbnail   string         `gorm:"type:varchar(255)" json:"thumbnail"` 
 	UserID      uuid.UUID      `gorm:"type:char(36);index" json:"user_id"`
 
 	// Relations
 	User        User         `gorm:"foreignKey:UserID" json:"user"`
 	Ingredients []Ingredient `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"ingredients"`
 	Steps       []Step       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"steps"`
-	Photos      []Photo      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"photos"`
 	Favorites   []Favorite   `gorm:"foreignKey:RecipeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"favorites"`
 
 	CreatedAt time.Time      `json:"created_at"`
@@ -73,18 +71,6 @@ func (s *Step) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-type Photo struct {
-	ID       uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
-	RecipeID uuid.UUID `gorm:"type:char(36);index" json:"recipe_id"`
-	URL      string    `gorm:"not null" json:"url"`
-}
-
-func (p *Photo) BeforeCreate(tx *gorm.DB) (err error) {
-	if p.ID == uuid.Nil {
-		p.ID = uuid.New()
-	}
-	return
-}
 
 type Favorite struct {
 	ID       uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
@@ -95,7 +81,6 @@ type Favorite struct {
 
 	Recipe Recipe `gorm:"foreignKey:RecipeID;references:ID" json:"recipe"`
 }
-
 
 func (f *Favorite) BeforeCreate(tx *gorm.DB) (err error) {
 	if f.ID == uuid.Nil {

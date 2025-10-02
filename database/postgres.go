@@ -44,7 +44,6 @@ func autoMigrate(db *gorm.DB) {
 		&models.Recipe{},
 		&models.Ingredient{},
 		&models.Step{},
-		&models.Photo{},
 		&models.Favorite{},
 		&models.BlacklistedToken{},
 	)

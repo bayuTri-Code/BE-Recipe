@@ -11,9 +11,9 @@ type CreateRecipeRequest struct {
 	CookTime    int                `json:"cook_time"`
 	Servings    int                `json:"servings"`
 	
-	Ingredients []IngredientInput  `json:"ingredients"` // optional
-	Steps       []StepInput        `json:"steps"`       // optional
-	Photos      []PhotoInput       `json:"photos"`      // optional
+	Ingredients []IngredientInput  `json:"ingredients"` 
+	Steps       []StepInput        `json:"steps"`       
+	
 }
 
 type UpdateRecipeRequest struct {
@@ -26,7 +26,7 @@ type UpdateRecipeRequest struct {
 
 	Ingredients []IngredientInput  `json:"ingredients"`
 	Steps       []StepInput        `json:"steps"`
-	Photos      []PhotoInput       `json:"photos"`
+	
 }
 
 type IngredientInput struct {
@@ -39,9 +39,7 @@ type StepInput struct {
 	Detail string `json:"detail" binding:"required"`
 }
 
-type PhotoInput struct {
-	URL string `json:"url" binding:"required"`
-}
+
 
 // ---- Responses ----
 type UserSummaryResponse struct {
@@ -62,10 +60,6 @@ type StepResponse struct {
 	Detail string    `json:"detail"`
 }
 
-type PhotoResponse struct {
-	ID  uuid.UUID `json:"id"`
-	URL string    `json:"url"`
-}
 
 type FavoriteResponse struct {
 	ID     uuid.UUID `json:"id"`
@@ -77,16 +71,15 @@ type RecipeResponse struct {
 	Title       string               `json:"title"`
 	Description string               `json:"description"`
 	Category    string               `json:"category"`
+	Thumbnail   string               `json:"thumbnail"` 
 	User        UserSummaryResponse  `json:"user"`
 	Ingredients []IngredientResponse `json:"ingredients"`
 	Steps       []StepResponse       `json:"steps"`
 	PrepTime    int                  `json:"prep_time"`
 	CookTime    int                  `json:"cook_time"`
 	Servings    int                  `json:"servings"`
-	Photos      []PhotoResponse      `json:"photos"`
 	Favorites   []FavoriteResponse   `json:"favorites"`
 }
-
 
 type AddFavoriteRequest struct {
 	UserID uuid.UUID `json:"user_id" binding:"required"`
