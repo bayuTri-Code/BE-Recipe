@@ -313,9 +313,8 @@ paths:
       consumes:
       - multipart/form-data
       - multipart/form-data
-      description: |-
-        Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail
-        Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail
+      description: Create a new recipe with title, description, category, prep_time,
+        cook_time, ingredients, steps, and thumbnail
       parameters:
       - description: Thumbnail Image
         in: formData

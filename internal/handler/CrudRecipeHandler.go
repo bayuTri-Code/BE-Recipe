@@ -30,7 +30,6 @@ func NewRecipeHandler(s *services.RecipeService) *RecipeHandler {
 // @Failure 400 {object} map[string]string
 // @Router /api/recipes [post]
 // CreateRecipe godoc
-// @Description Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail
 // @Tags Recipes
 // @Accept multipart/form-data
 // @Produce json

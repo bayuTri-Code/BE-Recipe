@@ -118,7 +118,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail\nCreate a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail",
+                "description": "Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail",
                 "consumes": [
                     "multipart/form-data",
                     "multipart/form-data"
