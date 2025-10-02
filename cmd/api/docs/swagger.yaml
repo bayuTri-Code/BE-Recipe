@@ -1,37 +1,5 @@
 basePath: /
 definitions:
-  dto.CreateRecipeRequest:
-    properties:
-      category:
-        type: string
-      cook_time:
-        type: integer
-      description:
-        type: string
-      ingredients:
-        description: optional
-        items:
-          $ref: '#/definitions/dto.IngredientInput'
-        type: array
-      photos:
-        description: optional
-        items:
-          $ref: '#/definitions/dto.PhotoInput'
-        type: array
-      prep_time:
-        type: integer
-      servings:
-        type: integer
-      steps:
-        description: optional
-        items:
-          $ref: '#/definitions/dto.StepInput'
-        type: array
-      title:
-        type: string
-    required:
-    - title
-    type: object
   dto.DashboardDTO:
     properties:
       stats:
@@ -39,22 +7,54 @@ definitions:
       username:
         type: string
     type: object
-  dto.IngredientInput:
+  dto.FavoriteResponse:
+    properties:
+      id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.IngredientResponse:
     properties:
       amount:
         type: string
+      id:
+        type: string
       name:
         type: string
-    required:
-    - amount
-    - name
     type: object
-  dto.PhotoInput:
+  dto.RecipeResponse:
     properties:
-      url:
+      category:
         type: string
-    required:
-    - url
+      cook_time:
+        type: integer
+      description:
+        type: string
+      favorites:
+        items:
+          $ref: '#/definitions/dto.FavoriteResponse'
+        type: array
+      id:
+        type: string
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.IngredientResponse'
+        type: array
+      prep_time:
+        type: integer
+      servings:
+        type: integer
+      steps:
+        items:
+          $ref: '#/definitions/dto.StepResponse'
+        type: array
+      thumbnail:
+        type: string
+      title:
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserSummaryResponse'
     type: object
   dto.StatsDTO:
     properties:
@@ -63,15 +63,23 @@ definitions:
       numberOfRecipes:
         type: integer
     type: object
-  dto.StepInput:
+  dto.StepResponse:
     properties:
       detail:
         type: string
+      id:
+        type: string
       number:
         type: integer
-    required:
-    - detail
-    - number
+    type: object
+  dto.UserSummaryResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
     type: object
   handler.ErrorResponse:
     properties:
@@ -118,15 +126,6 @@ definitions:
       token:
         type: string
     type: object
-  models.Photo:
-    properties:
-      id:
-        type: string
-      recipe_id:
-        type: string
-      url:
-        type: string
-    type: object
   models.Recipe:
     properties:
       category:
@@ -147,10 +146,6 @@ definitions:
         items:
           $ref: '#/definitions/models.Ingredient'
         type: array
-      photos:
-        items:
-          $ref: '#/definitions/models.Photo'
-        type: array
       prep_time:
         type: integer
       servings:
@@ -159,6 +154,8 @@ definitions:
         items:
           $ref: '#/definitions/models.Step'
         type: array
+      thumbnail:
+        type: string
       title:
         type: string
       updated_at:
@@ -257,7 +254,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Recipe'
+              $ref: '#/definitions/dto.RecipeResponse'
             type: array
         "401":
           description: Unauthorized
@@ -307,30 +304,64 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Recipe'
+              $ref: '#/definitions/dto.RecipeResponse'
             type: array
       summary: Get all recipes for all users
       tags:
       - Recipes
     post:
       consumes:
-      - application/json
-      description: Create a new recipe with title, description, category, prep_time,
-        cook_time and ingredients and steps for the logged-in user
+      - multipart/form-data
+      - multipart/form-data
+      description: |-
+        Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail
+        Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail
       parameters:
-      - description: Recipe Data
-        in: body
-        name: recipe
+      - description: Thumbnail Image
+        in: formData
+        name: thumbnail
+        type: file
+      - description: Recipe Title
+        in: formData
+        name: title
         required: true
-        schema:
-          $ref: '#/definitions/dto.CreateRecipeRequest'
+        type: string
+      - description: Recipe Description
+        in: formData
+        name: description
+        type: string
+      - description: Recipe Category
+        in: formData
+        name: category
+        type: string
+      - description: Preparation Time
+        in: formData
+        name: prep_time
+        type: integer
+      - description: Cooking Time
+        in: formData
+        name: cook_time
+        type: integer
+      - description: Number of Servings
+        in: formData
+        name: servings
+        type: integer
+      - description: Ingredients JSON Array
+        in: formData
+        name: ingredients
+        type: string
+      - description: Steps JSON Array
+        in: formData
+        name: steps
+        type: string
       produces:
+      - application/json
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Recipe'
+            $ref: '#/definitions/dto.RecipeResponse'
         "400":
           description: Bad Request
           schema:
@@ -339,6 +370,7 @@ paths:
             type: object
       summary: Create a new recipe by the authenticated user
       tags:
+      - Recipes
       - Recipes
   /api/recipes/{id}:
     delete:
@@ -381,7 +413,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Recipe'
+            $ref: '#/definitions/dto.RecipeResponse'
         "404":
           description: Not Found
           schema:
@@ -393,27 +425,59 @@ paths:
       - Recipes
     put:
       consumes:
-      - application/json
+      - multipart/form-data
+      - multipart/form-data
       description: Update recipe details by ID
       parameters:
+      - description: New Thumbnail Image
+        in: formData
+        name: thumbnail
+        type: file
       - description: Recipe ID
         in: path
         name: id
         required: true
         type: string
-      - description: Updated Recipe
-        in: body
-        name: recipe
-        required: true
-        schema:
-          $ref: '#/definitions/models.Recipe'
+      - description: Recipe Title
+        in: formData
+        name: title
+        type: string
+      - description: Recipe Description
+        in: formData
+        name: description
+        type: string
+      - description: Recipe Category
+        in: formData
+        name: category
+        type: string
+      - description: Preparation Time
+        in: formData
+        name: prep_time
+        type: integer
+      - description: Cooking Time
+        in: formData
+        name: cook_time
+        type: integer
+      - description: Number of Servings
+        in: formData
+        name: servings
+        type: integer
+      - description: Ingredients JSON Array
+        in: formData
+        name: ingredients
+        type: string
+      - description: Steps JSON Array
+        in: formData
+        name: steps
+        type: string
       produces:
+      - application/json
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Recipe'
+            $ref: '#/definitions/dto.RecipeResponse'
         "400":
           description: Bad Request
           schema:
@@ -428,6 +492,7 @@ paths:
             type: object
       summary: Update recipe
       tags:
+      - Recipes
       - Recipes
   /api/recipes/{recipe_id}/favorites:
     post:

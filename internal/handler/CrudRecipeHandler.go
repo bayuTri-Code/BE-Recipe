@@ -30,7 +30,6 @@ func NewRecipeHandler(s *services.RecipeService) *RecipeHandler {
 // @Failure 400 {object} map[string]string
 // @Router /api/recipes [post]
 // CreateRecipe godoc
-// @Summary Create a new recipe by the authenticated user
 // @Description Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail
 // @Tags Recipes
 // @Accept multipart/form-data
@@ -178,7 +177,6 @@ func (h *RecipeHandler) GetMyRecipes(c *gin.Context) {
 // @Router /api/recipes/{id} [put]
 // UpdateRecipe godoc
 // @Summary Update recipe
-// @Description Update recipe details by ID
 // @Tags Recipes
 // @Accept multipart/form-data
 // @Produce json

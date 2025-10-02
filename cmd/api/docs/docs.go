@@ -36,7 +36,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Recipe"
+                                "$ref": "#/definitions/dto.RecipeResponse"
                             }
                         }
                     },
@@ -111,40 +111,89 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Recipe"
+                                "$ref": "#/definitions/dto.RecipeResponse"
                             }
                         }
                     }
                 }
             },
             "post": {
-                "description": "Create a new recipe with title, description, category, prep_time, cook_time and ingredients and steps for the logged-in user",
+                "description": "Create a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail\nCreate a new recipe with title, description, category, prep_time, cook_time, ingredients, steps, and thumbnail",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data",
+                    "multipart/form-data"
                 ],
                 "produces": [
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
+                    "Recipes",
                     "Recipes"
                 ],
                 "summary": "Create a new recipe by the authenticated user",
                 "parameters": [
                     {
-                        "description": "Recipe Data",
-                        "name": "recipe",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateRecipeRequest"
-                        }
+                        "type": "file",
+                        "description": "Thumbnail Image",
+                        "name": "thumbnail",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recipe Title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recipe Description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recipe Category",
+                        "name": "category",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Preparation Time",
+                        "name": "prep_time",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cooking Time",
+                        "name": "cook_time",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of Servings",
+                        "name": "servings",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Ingredients JSON Array",
+                        "name": "ingredients",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Steps JSON Array",
+                        "name": "steps",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Recipe"
+                            "$ref": "#/definitions/dto.RecipeResponse"
                         }
                     },
                     "400": {
@@ -231,7 +280,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Recipe"
+                            "$ref": "#/definitions/dto.RecipeResponse"
                         }
                     },
                     "404": {
@@ -248,16 +297,25 @@ const docTemplate = `{
             "put": {
                 "description": "Update recipe details by ID",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data",
+                    "multipart/form-data"
                 ],
                 "produces": [
+                    "application/json",
                     "application/json"
                 ],
                 "tags": [
+                    "Recipes",
                     "Recipes"
                 ],
                 "summary": "Update recipe",
                 "parameters": [
+                    {
+                        "type": "file",
+                        "description": "New Thumbnail Image",
+                        "name": "thumbnail",
+                        "in": "formData"
+                    },
                     {
                         "type": "string",
                         "description": "Recipe ID",
@@ -266,20 +324,59 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Updated Recipe",
-                        "name": "recipe",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Recipe"
-                        }
+                        "type": "string",
+                        "description": "Recipe Title",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recipe Description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Recipe Category",
+                        "name": "category",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Preparation Time",
+                        "name": "prep_time",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cooking Time",
+                        "name": "cook_time",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of Servings",
+                        "name": "servings",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Ingredients JSON Array",
+                        "name": "ingredients",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Steps JSON Array",
+                        "name": "steps",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Recipe"
+                            "$ref": "#/definitions/dto.RecipeResponse"
                         }
                     },
                     "400": {
@@ -594,53 +691,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateRecipeRequest": {
-            "type": "object",
-            "required": [
-                "title"
-            ],
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "cook_time": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "ingredients": {
-                    "description": "optional",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.IngredientInput"
-                    }
-                },
-                "photos": {
-                    "description": "optional",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.PhotoInput"
-                    }
-                },
-                "prep_time": {
-                    "type": "integer"
-                },
-                "servings": {
-                    "type": "integer"
-                },
-                "steps": {
-                    "description": "optional",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.StepInput"
-                    }
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.DashboardDTO": {
             "type": "object",
             "properties": {
@@ -652,14 +702,24 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.IngredientInput": {
+        "dto.FavoriteResponse": {
             "type": "object",
-            "required": [
-                "amount",
-                "name"
-            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.IngredientResponse": {
+            "type": "object",
             "properties": {
                 "amount": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "name": {
@@ -667,14 +727,53 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.PhotoInput": {
+        "dto.RecipeResponse": {
             "type": "object",
-            "required": [
-                "url"
-            ],
             "properties": {
-                "url": {
+                "category": {
                     "type": "string"
+                },
+                "cook_time": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "favorites": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FavoriteResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.IngredientResponse"
+                    }
+                },
+                "prep_time": {
+                    "type": "integer"
+                },
+                "servings": {
+                    "type": "integer"
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.StepResponse"
+                    }
+                },
+                "thumbnail": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.UserSummaryResponse"
                 }
             }
         },
@@ -689,18 +788,31 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.StepInput": {
+        "dto.StepResponse": {
             "type": "object",
-            "required": [
-                "detail",
-                "number"
-            ],
             "properties": {
                 "detail": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "number": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UserSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -774,20 +886,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Photo": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "recipe_id": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Recipe": {
             "type": "object",
             "properties": {
@@ -818,12 +916,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Ingredient"
                     }
                 },
-                "photos": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Photo"
-                    }
-                },
                 "prep_time": {
                     "type": "integer"
                 },
@@ -835,6 +927,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.Step"
                     }
+                },
+                "thumbnail": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
