@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bayuTri-Code/BE-Recipe/internal/models"
+	dto "github.com/bayuTri-Code/BE-Recipe/internal/DTO"
 	"github.com/bayuTri-Code/BE-Recipe/internal/services"
 	"github.com/bayuTri-Code/BE-Recipe/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 // @Summary Register user
@@ -18,12 +19,12 @@ import (
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param request body models.RegisterRequest true "Register request"
-// @Success 201 {object} models.RegisterResponse
-// @Failure 400 {object} models.ResponseError
+// @Param request body dto.RegisterRequest true "Register request"
+// @Success 201 {object} dto.RegisterResponse
+// @Failure 400 {object} dto.ResponseError
 // @Router /auth/register [post]
 func RegisterHandler(c *gin.Context) {
-	var req models.RegisterRequest
+	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ResponseError(c, http.StatusBadRequest, "Invalid Input: "+err.Error())
 		return
@@ -35,12 +36,12 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, models.RegisterResponse{
-		BaseResponse: models.BaseResponse{
+	c.JSON(http.StatusCreated, dto.RegisterResponse{
+		BaseResponse: dto.BaseResponse{
 			Success: true,
 			Message: "User created successfully",
 		},
-		Data: models.UserResponse{
+		Data: dto.UserResponse{
 			UserId:    user.ID.String(),
 			Name:  user.Name,
 			Email: user.Email,
@@ -53,12 +54,12 @@ func RegisterHandler(c *gin.Context) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param request body models.LoginRequest true "Login request"
-// @Success 200 {object} models.LoginResponse
-// @Failure 400 {object} models.ResponseError
+// @Param request body dto.LoginRequest true "Login request"
+// @Success 200 {object} dto.LoginResponse
+// @Failure 400 {object} dto.ResponseError
 // @Router /auth/login [post]
 func LoginHandler(c *gin.Context) {
-	var req models.LoginRequest
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ResponseError(c, http.StatusBadRequest, "Invalid Input: "+err.Error())
 		return
@@ -76,13 +77,13 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, models.LoginResponse{
-		BaseResponse: models.BaseResponse{
+	c.JSON(http.StatusOK, dto.LoginResponse{
+		BaseResponse: dto.BaseResponse{
 			Success: true,
 			Message: "Login success",
 		},
 		Token: token,
-		Data: models.UserResponse{
+		Data: dto.UserResponse{
 			UserId: user.ID.String(),
 			Name:   user.Name,
 			Email:  user.Email,
@@ -144,4 +145,53 @@ func LogoutHandler(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, gin.H{"message": "Logout successful, token blacklisted"})
+}
+
+
+
+
+
+
+
+// UpdateProfile godoc
+// @Summary Update user profile
+// @Description Update name, email, and bio of the logged in user
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param body body dto.UpdateProfileRequest true "Update Profile"
+// @Success 200 {object} dto.UpdateProfileResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /api/profile [put]
+func UpdateProfileHandler(c *gin.Context) {
+	userIDStr, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	userID, err := uuid.Parse(userIDStr.(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	var req dto.UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := services.UpdateProfile(userID, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "profile updated successfully",
+		"data":    res,
+	})
 }

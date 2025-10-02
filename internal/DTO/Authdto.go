@@ -1,4 +1,4 @@
-package models
+package dto
 
 import (
 	"time"
@@ -16,6 +16,13 @@ type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type UpdateProfileRequest struct {
+	Name     string `json:"name" binding:"omitempty"`
+	Email    string `json:"email" binding:"omitempty,email"`
+	Bio      string `json:"bio" binding:"omitempty"`
+}
+
 
 type BaseResponse struct {
 	Success bool   `json:"success"`
@@ -38,6 +45,13 @@ type UserResponse struct {
     UserId    string `json:"user_id"`
     Name  string `json:"name"`
     Email string `json:"email"`
+}
+
+type UpdateProfileResponse struct {
+	UserId string `json:"user_id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Bio    string `json:"bio"`
 }
 
 type ResponseError struct {

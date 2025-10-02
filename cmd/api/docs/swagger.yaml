@@ -23,6 +23,24 @@ definitions:
       name:
         type: string
     type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.LoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.UserResponse'
+      message:
+        type: string
+      success:
+        type: boolean
+      token:
+        type: string
+    type: object
   dto.RecipeResponse:
     properties:
       category:
@@ -56,6 +74,35 @@ definitions:
       user:
         $ref: '#/definitions/dto.UserSummaryResponse'
     type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.RegisterResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.UserResponse'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.ResponseError:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
   dto.StatsDTO:
     properties:
       numberOfFavorites:
@@ -71,6 +118,35 @@ definitions:
         type: string
       number:
         type: integer
+    type: object
+  dto.UpdateProfileRequest:
+    properties:
+      bio:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.UpdateProfileResponse:
+    properties:
+      bio:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
     type: object
   dto.UserSummaryResponse:
     properties:
@@ -106,24 +182,6 @@ definitions:
       name:
         type: string
       recipe_id:
-        type: string
-    type: object
-  models.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    type: object
-  models.LoginResponse:
-    properties:
-      data:
-        $ref: '#/definitions/models.UserResponse'
-      message:
-        type: string
-      success:
-        type: boolean
-      token:
         type: string
     type: object
   models.Recipe:
@@ -167,35 +225,6 @@ definitions:
       user_id:
         type: string
     type: object
-  models.RegisterRequest:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - name
-    - password
-    type: object
-  models.RegisterResponse:
-    properties:
-      data:
-        $ref: '#/definitions/models.UserResponse'
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
-  models.ResponseError:
-    properties:
-      message:
-        type: string
-      status:
-        type: string
-    type: object
   models.Step:
     properties:
       detail:
@@ -209,6 +238,8 @@ definitions:
     type: object
   models.User:
     properties:
+      bio:
+        type: string
       created_at:
         type: string
       email:
@@ -226,15 +257,6 @@ definitions:
           $ref: '#/definitions/models.Recipe'
         type: array
       updated_at:
-        type: string
-    type: object
-  models.UserResponse:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      user_id:
         type: string
     type: object
 host: http://192.168.100.247:8080
@@ -294,6 +316,40 @@ paths:
       summary: Get user dashboard data
       tags:
       - Dashboard
+  /api/profile:
+    put:
+      consumes:
+      - application/json
+      description: Update name, email, and bio of the logged in user
+      parameters:
+      - description: Update Profile
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user profile
+      tags:
+      - Auth
   /api/recipes:
     get:
       description: Retrieve all available recipes
@@ -578,18 +634,18 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.LoginResponse'
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ResponseError'
+            $ref: '#/definitions/dto.ResponseError'
       summary: Login user
       tags:
       - Auth
@@ -604,18 +660,18 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.RegisterRequest'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.RegisterResponse'
+            $ref: '#/definitions/dto.RegisterResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ResponseError'
+            $ref: '#/definitions/dto.ResponseError'
       summary: Register user
       tags:
       - Auth

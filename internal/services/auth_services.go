@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bayuTri-Code/BE-Recipe/database"
+	dto "github.com/bayuTri-Code/BE-Recipe/internal/DTO"
 	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -99,10 +100,45 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
+
+
+func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest) (*dto.UpdateProfileResponse, error) {
+	var user models.User
+	if err := database.Db.First(&user, "id = ?", userID).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	
+	if req.Name != "" {
+		user.Name = req.Name
+	}
+	if req.Email != "" {
+		user.Email = req.Email
+	}
+	if req.Bio != "" {
+		user.Bio = req.Bio
+	}
+	
+
+	if err := database.Db.Save(&user).Error; err != nil {
+		return nil, errors.New("failed to update user")
+	}
+
+	return &dto.UpdateProfileResponse{
+		UserId: user.ID.String(),
+		Name:   user.Name,
+		Email:  user.Email,
+		Bio:    user.Bio,
+	}, nil
+}
+
+
+
+
 func BlacklistToken(tokenString string, expiresAt time.Time) error {
     fmt.Println("Blacklisting token:", tokenString)
 
-    blacklisted := models.BlacklistedToken{
+    blacklisted := dto.BlacklistedToken{
         ID:        uuid.New(),
         Token:     strings.TrimSpace(tokenString),
         CreatedAt: time.Now(),
@@ -118,10 +154,11 @@ func BlacklistToken(tokenString string, expiresAt time.Time) error {
     return nil
 }
 
+
 func IsTokenBlacklisted(tokenString string) (bool, error) {
     fmt.Println("Mengecek token di blacklist:", tokenString)
 
-    var token models.BlacklistedToken
+    var token dto.BlacklistedToken
     err := database.Db.Where("token = ?", strings.TrimSpace(tokenString)).First(&token).Error
 
     if err == gorm.ErrRecordNotFound {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	dto "github.com/bayuTri-Code/BE-Recipe/internal/DTO"
 	"github.com/bayuTri-Code/BE-Recipe/internal/config"
 	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"gorm.io/driver/postgres"
@@ -45,7 +46,7 @@ func autoMigrate(db *gorm.DB) {
 		&models.Ingredient{},
 		&models.Step{},
 		&models.Favorite{},
-		&models.BlacklistedToken{},
+		&dto.BlacklistedToken{},
 	)
 
 	if err != nil {

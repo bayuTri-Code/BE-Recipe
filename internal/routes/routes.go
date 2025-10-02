@@ -44,6 +44,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 		auth.POST("/register", handler.RegisterHandler)
 		auth.POST("/login", handler.LoginHandler)
 		auth.POST("/logout", middleware.AuthMiddleware(), handler.LogoutHandler)
+		 auth.PUT("/profile",middleware.AuthMiddleware(), handler.UpdateProfileHandler)
 	}
 
 	// Recipe & Favorite routes
