@@ -15,11 +15,9 @@ type FavoriteService struct {
 func NewFavoriteService(db *gorm.DB) *FavoriteService {
 	return &FavoriteService{DB: db}
 }
-
 func (s *FavoriteService) GetAllFavorites(userID string) ([]models.Favorite, error) {
 	var favorites []models.Favorite
 
-	
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID")
@@ -32,9 +30,7 @@ func (s *FavoriteService) GetAllFavorites(userID string) ([]models.Favorite, err
 				Preload("Ingredients").
 				Preload("Steps", func(db *gorm.DB) *gorm.DB {
 					return db.Order("steps.number ASC")
-				}).
-				Preload("Photos").
-				Preload("Favorites")
+				})
 		}).
 		Where("user_id = ?", userUUID).
 		Find(&favorites).Error
@@ -44,7 +40,6 @@ func (s *FavoriteService) GetAllFavorites(userID string) ([]models.Favorite, err
 	}
 	return favorites, nil
 }
-
 
 func (s *FavoriteService) AddFavoriteService(userID, recipeID string) (bool, error) {
 	recipeUUID, err := uuid.Parse(recipeID)
@@ -76,25 +71,24 @@ func (s *FavoriteService) AddFavoriteService(userID, recipeID string) (bool, err
 		return true, nil 
 	}
 
-	
 	if err := s.DB.Delete(&fav).Error; err != nil {
 		return false, err
 	}
 	return false, nil 
 }
 
-func (s *FavoriteService) RemoveFavorite(userID, recipeID string) error {
-	userUUID, err := uuid.Parse(userID)
-	if err != nil {
-		return fmt.Errorf("invalid user ID")
-	}
+// func (s *FavoriteService) RemoveFavorite(userID, recipeID string) error {
+// 	userUUID, err := uuid.Parse(userID)
+// 	if err != nil {
+// 		return fmt.Errorf("invalid user ID")
+// 	}
 
-	recipeUUID, err := uuid.Parse(recipeID)
-	if err != nil {
-		return fmt.Errorf("invalid recipe ID")
-	}
+// 	recipeUUID, err := uuid.Parse(recipeID)
+// 	if err != nil {
+// 		return fmt.Errorf("invalid recipe ID")
+// 	}
 
-	return s.DB.
-		Where("user_id = ? AND recipe_id = ?", userUUID, recipeUUID).
-		Delete(&models.Favorite{}).Error
-}
+// 	return s.DB.
+// 		Where("user_id = ? AND recipe_id = ?", userUUID, recipeUUID).
+// 		Delete(&models.Favorite{}).Error
+// }

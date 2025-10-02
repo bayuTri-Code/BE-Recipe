@@ -15,15 +15,15 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 type Recipe struct {
-	ID          uuid.UUID      `gorm:"type:char(36);primaryKey" json:"id"`
-	Title       string         `gorm:"not null" json:"title"`
-	Description string         `gorm:"type:text" json:"description"`
-	Category    string         `gorm:"type:varchar(50)" json:"category"`
-	PrepTime    int            `json:"prep_time"`
-	CookTime    int            `json:"cook_time"`
-	Servings    int            `json:"servings"`
-	Thumbnail   string         `gorm:"type:varchar(255)" json:"thumbnail"` 
-	UserID      uuid.UUID      `gorm:"type:char(36);index" json:"user_id"`
+	ID          uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
+	Title       string    `gorm:"not null" json:"title"`
+	Description string    `gorm:"type:text" json:"description"`
+	Category    string    `gorm:"type:varchar(50)" json:"category"`
+	PrepTime    int       `json:"prep_time"`
+	CookTime    int       `json:"cook_time"`
+	Servings    int       `json:"servings"`
+	Thumbnail   string    `gorm:"type:varchar(255)" json:"thumbnail"`
+	UserID      uuid.UUID `gorm:"type:char(36);index" json:"user_id"`
 
 	// Relations
 	User        User         `gorm:"foreignKey:UserID" json:"user"`
@@ -70,7 +70,6 @@ func (s *Step) BeforeCreate(tx *gorm.DB) (err error) {
 	}
 	return
 }
-
 
 type Favorite struct {
 	ID       uuid.UUID `gorm:"type:char(36);primaryKey" json:"id"`
