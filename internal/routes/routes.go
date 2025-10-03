@@ -2,6 +2,8 @@ package routes
 
 import (
 	"log"
+	"os"
+	"strings"
 
 	"github.com/bayuTri-Code/BE-Recipe/internal/handler"
 	"github.com/bayuTri-Code/BE-Recipe/internal/middleware"
@@ -17,8 +19,9 @@ func Routes(db *gorm.DB) *gin.Engine {
 	r.Use(gin.Recovery())
 
 	// CORS
+	originallow := strings.Split(os.Getenv("CORS_ORIGINS"), ",")
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://192.168.100.8:3000", "http://recipe.com", "http://192.168.100.102:3000", "http://127.0.0.1:5173"},
+		AllowOrigins:     originallow,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
