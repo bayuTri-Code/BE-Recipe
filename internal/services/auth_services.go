@@ -156,7 +156,7 @@ func BlacklistToken(tokenString string, expiresAt time.Time) error {
 
 
 func IsTokenBlacklisted(tokenString string) (bool, error) {
-    fmt.Println("Mengecek token di blacklist:", tokenString)
+    fmt.Println("cek token di blacklist:", tokenString)
 
     var token dto.BlacklistedToken
     err := database.Db.Where("token = ?", strings.TrimSpace(tokenString)).First(&token).Error
@@ -168,6 +168,6 @@ func IsTokenBlacklisted(tokenString string) (bool, error) {
         return false, err
     }
 
-    fmt.Println("Token ditemukan di blacklist:", token.Token)
+    fmt.Println("Token terblacklist:", token.Token)
     return true, nil
 }

@@ -36,6 +36,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 		})
 	})
 
+
 	r.Static("/storage", "./public/storage")
 
 	// Auth routes

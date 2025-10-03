@@ -85,7 +85,10 @@ func toRecipeResponse(m models.Recipe) dto.RecipeResponse {
 	}
 }
 
+
 func (s *RecipeService) SaveThumbnail(file *multipart.FileHeader) (string, error) {
+	 apiImagePath := os.Getenv("API_IMAGE_PATH")
+
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
 	if !allowedExts[ext] {
@@ -120,7 +123,7 @@ func (s *RecipeService) SaveThumbnail(file *multipart.FileHeader) (string, error
 		return "", err
 	}
 
-	return fmt.Sprintf("http://localhost:8080/storage/%s", filename), nil
+	 return fmt.Sprintf("%s/storage/%s", apiImagePath, filename), nil
 }
 
 func (s *RecipeService) DeleteThumbnail(thumbnailURL string) error {
