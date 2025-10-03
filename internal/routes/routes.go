@@ -36,7 +36,6 @@ func Routes(db *gorm.DB) *gin.Engine {
 		})
 	})
 
-
 	r.Static("/storage", "./public/storage")
 
 	// Auth routes
@@ -44,8 +43,10 @@ func Routes(db *gorm.DB) *gin.Engine {
 	{
 		auth.POST("/register", handler.RegisterHandler)
 		auth.POST("/login", handler.LoginHandler)
+		auth.POST("/forgot-password", handler.ForgotPasswordHandler)
+		auth.POST("/reset-password", handler.ResetPasswordHandler)
 		auth.POST("/logout", middleware.AuthMiddleware(), handler.LogoutHandler)
-		 auth.PUT("/profile",middleware.AuthMiddleware(), handler.UpdateProfileHandler)
+		auth.PUT("/profile", middleware.AuthMiddleware(), handler.UpdateProfileHandler)
 	}
 
 	// Recipe & Favorite routes
@@ -64,7 +65,6 @@ func Routes(db *gorm.DB) *gin.Engine {
 		apiRecipe.POST("/recipes", middleware.AuthMiddleware(), recipeHandler.CreateRecipe)
 		apiRecipe.PUT("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.UpdateRecipe)
 		apiRecipe.DELETE("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.DeleteRecipe)
-
 
 		// Favorites
 		apiRecipe.GET("/recipes/favorites", middleware.AuthMiddleware(), favoriteHandler.GetAllFavorites)

@@ -85,9 +85,8 @@ func toRecipeResponse(m models.Recipe) dto.RecipeResponse {
 	}
 }
 
-
 func (s *RecipeService) SaveThumbnail(file *multipart.FileHeader) (string, error) {
-	 apiImagePath := os.Getenv("API_IMAGE_PATH")
+	apiImagePath := os.Getenv("API_IMAGE_PATH")
 
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	allowedExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
@@ -95,8 +94,8 @@ func (s *RecipeService) SaveThumbnail(file *multipart.FileHeader) (string, error
 		return "", errors.New("only jpg, jpeg, and png files are allowed")
 	}
 
-	if file.Size > 5*1024*1024 {
-		return "", errors.New("file size must not exceed 5MB")
+	if file.Size > 2*1024*1024 {
+		return "", errors.New("file size must not exceed 2MB")
 	}
 
 	filename := fmt.Sprintf("recipe_%d%s", time.Now().UnixNano(), ext)
@@ -123,7 +122,7 @@ func (s *RecipeService) SaveThumbnail(file *multipart.FileHeader) (string, error
 		return "", err
 	}
 
-	 return fmt.Sprintf("%s/storage/%s", apiImagePath, filename), nil
+	return fmt.Sprintf("%s/storage/%s", apiImagePath, filename), nil
 }
 
 func (s *RecipeService) DeleteThumbnail(thumbnailURL string) error {

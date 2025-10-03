@@ -14,6 +14,13 @@ definitions:
       user_id:
         type: string
     type: object
+  dto.ForgotPasswordReq:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   dto.IngredientResponse:
     properties:
       amount:
@@ -95,6 +102,16 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  dto.ResetPasswordReq:
+    properties:
+      new_password:
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
     type: object
   dto.ResponseError:
     properties:
@@ -623,6 +640,36 @@ paths:
       summary: Get all favorite recipes by user
       tags:
       - Favorites
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Generates a password reset token and sends it to the user's email.
+      parameters:
+      - description: Email request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reset token (dev) or message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid email or other error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Send password reset link
+      tags:
+      - Auth
   /auth/login:
     post:
       consumes:
@@ -673,6 +720,36 @@ paths:
           schema:
             $ref: '#/definitions/dto.ResponseError'
       summary: Register user
+      tags:
+      - Auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets the user's password using a valid reset token.
+      parameters:
+      - description: Reset Password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password reset successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request or token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reset user password
       tags:
       - Auth
   /logout:

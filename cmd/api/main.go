@@ -20,7 +20,6 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	// Load config & koneksi DB
 	config.ConfigDb()
 	db := database.PostgresConn()
 

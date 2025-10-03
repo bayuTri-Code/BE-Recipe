@@ -18,11 +18,10 @@ type LoginRequest struct {
 }
 
 type UpdateProfileRequest struct {
-	Name     string `json:"name" binding:"omitempty"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	Bio      string `json:"bio" binding:"omitempty"`
+	Name  string `json:"name" binding:"omitempty"`
+	Email string `json:"email" binding:"omitempty,email"`
+	Bio   string `json:"bio" binding:"omitempty"`
 }
-
 
 type BaseResponse struct {
 	Success bool   `json:"success"`
@@ -30,21 +29,20 @@ type BaseResponse struct {
 }
 
 type RegisterResponse struct {
-    BaseResponse
-    Data UserResponse `json:"data"`
+	BaseResponse
+	Data UserResponse `json:"data"`
 }
 
-
 type LoginResponse struct {
-    BaseResponse
-    Token string       `json:"token"`
-    Data  UserResponse `json:"data"`
+	BaseResponse
+	Token string       `json:"token"`
+	Data  UserResponse `json:"data"`
 }
 
 type UserResponse struct {
-    UserId    string `json:"user_id"`
-    Name  string `json:"name"`
-    Email string `json:"email"`
+	UserId string `json:"user_id"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
 }
 
 type UpdateProfileResponse struct {
@@ -52,6 +50,21 @@ type UpdateProfileResponse struct {
 	Name   string `json:"name"`
 	Email  string `json:"email"`
 	Bio    string `json:"bio"`
+}
+
+type EmailRequest struct {
+	To      string `json:"to" binding:"required"`
+	Subject string `json:"subject" binding:"required"`
+	Message string `json:"message" binding:"required"`
+}
+
+type ForgotPasswordReq struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type ResetPasswordReq struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
 }
 
 type ResponseError struct {

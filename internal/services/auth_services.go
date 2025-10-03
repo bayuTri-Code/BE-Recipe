@@ -12,6 +12,7 @@ import (
 	"github.com/bayuTri-Code/BE-Recipe/database"
 	dto "github.com/bayuTri-Code/BE-Recipe/internal/DTO"
 	"github.com/bayuTri-Code/BE-Recipe/internal/models"
+	"github.com/bayuTri-Code/BE-Recipe/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -171,3 +172,49 @@ func IsTokenBlacklisted(tokenString string) (bool, error) {
     fmt.Println("Token terblacklist:", token.Token)
     return true, nil
 }
+
+func ForgotPassword(email string) (string, error) {
+	var user models.User
+	if err := database.Db.Where("email = ?", email).First(&user).Error; err != nil {
+		return "", errors.New("email not found")
+	}
+
+	token, err := utils.GenerateTokenReset(user.ID.String())
+	if err != nil {
+		return "", err
+	}
+
+	resetLink := fmt.Sprintf("%s/reset-password?token=%s", os.Getenv("APP_URL"), token)
+
+	if os.Getenv("APP_ENV") == "development" {
+		return token, nil
+	}
+
+	subject := "Reset Your Password"
+	body := fmt.Sprintf("Klik link berikut untuk reset password:\n\n%s", resetLink)
+	if err := utils.SendEmail(user.Email, subject, body); err != nil {
+		return "", err
+	}
+
+	return "Reset link sent to your email", nil
+}
+
+
+func ResetPassword(token, newPassword string) (bool, error) {
+	claims, err := utils.ValidateTokenReset(token)
+	if err != nil {
+		return false, errors.New("invalid or expired token")
+	}
+
+	userID := claims["user_id"].(string)
+
+	if err := database.Db.Model(&models.User{}).
+		Where("id = ?", userID).
+		Update("password", newPassword).Error; err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+
