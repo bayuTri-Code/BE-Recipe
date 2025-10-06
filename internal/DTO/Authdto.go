@@ -21,6 +21,7 @@ type UpdateProfileRequest struct {
 	Name  string `json:"name" binding:"omitempty"`
 	Email string `json:"email" binding:"omitempty,email"`
 	Bio   string `json:"bio" binding:"omitempty"`
+	Avatar string `json:"avatar" binding:"omitempty"`
 }
 
 type BaseResponse struct {
@@ -50,6 +51,7 @@ type UpdateProfileResponse struct {
 	Name   string `json:"name"`
 	Email  string `json:"email"`
 	Bio    string `json:"bio"`
+	Avatar string `json:"avatar" binding:"omitempty"`
 }
 
 type EmailRequest struct {

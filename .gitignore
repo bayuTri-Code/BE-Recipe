@@ -1,4 +1,5 @@
 *.env
 
 /public/storage/*
+/public/profile_storage/*
 !/public/storage/.gitkeep

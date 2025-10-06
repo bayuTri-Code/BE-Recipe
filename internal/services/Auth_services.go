@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"mime/multipart"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -38,6 +40,30 @@ func init() {
 	}
 	jwtSecret = []byte(secret)
 }
+
+
+func saveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = out.ReadFrom(src)
+	return err
+}
+
+
+
+
+
+
 
 func RegisterServices(ctx context.Context, Name, Email, Password string) (*models.User, error) {
 	db := database.Db
@@ -102,14 +128,12 @@ func GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-
-func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest) (*dto.UpdateProfileResponse, error) {
+func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest, avatarFile *multipart.FileHeader) (*dto.UpdateProfileResponse, error) {
 	var user models.User
 	if err := database.Db.First(&user, "id = ?", userID).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	
 	if req.Name != "" {
 		user.Name = req.Name
 	}
@@ -119,7 +143,25 @@ func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest) (*dto.UpdateP
 	if req.Bio != "" {
 		user.Bio = req.Bio
 	}
-	
+
+	if avatarFile != nil {
+		apiImagePath := os.Getenv("API_IMAGE_PATH")
+
+		uploadDir := "public/profile_storage"
+		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+			return nil, errors.New("failed to create storage directory")
+		}
+
+		fileExt := filepath.Ext(avatarFile.Filename)
+		newFileName := fmt.Sprintf("%s%s", uuid.NewString(), fileExt)
+		filePath := filepath.Join(uploadDir, newFileName)
+
+		if err := saveUploadedFile(avatarFile, filePath); err != nil {
+			return nil, errors.New("failed to save avatar file")
+		}
+
+		user.Avatar = apiImagePath + "/profile-storage/" + newFileName
+	}
 
 	if err := database.Db.Save(&user).Error; err != nil {
 		return nil, errors.New("failed to update user")
@@ -130,9 +172,9 @@ func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest) (*dto.UpdateP
 		Name:   user.Name,
 		Email:  user.Email,
 		Bio:    user.Bio,
+		Avatar: user.Avatar,
 	}, nil
 }
-
 
 
 

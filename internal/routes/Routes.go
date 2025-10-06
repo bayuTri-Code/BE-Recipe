@@ -40,6 +40,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 	})
 
 	r.Static("/storage", "./public/storage")
+	r.Static("/profile-storage", "./public/profile_storage")
 
 	// Auth routes
 	auth := r.Group("/auth")

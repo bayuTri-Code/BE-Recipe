@@ -43,9 +43,9 @@ func RegisterHandler(c *gin.Context) {
 			Message: "User created successfully",
 		},
 		Data: dto.UserResponse{
-			UserId:    user.ID.String(),
-			Name:  user.Name,
-			Email: user.Email,
+			UserId: user.ID.String(),
+			Name:   user.Name,
+			Email:  user.Email,
 		},
 	})
 }
@@ -92,7 +92,6 @@ func LoginHandler(c *gin.Context) {
 	})
 }
 
-
 // LogoutHandler godoc
 // @Summary Logout user
 // @Description Blacklist token from Authorization header
@@ -106,61 +105,58 @@ func LoginHandler(c *gin.Context) {
 // @Failure 500 {object} map[string]string{error=string}
 // @Router /logout [post]
 func LogoutHandler(c *gin.Context) {
-    authHeader := c.GetHeader("Authorization")
-    if authHeader == "" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-        return
-    }
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+		return
+	}
 
-    parts := strings.Split(authHeader, " ")
-    if len(parts) != 2 || parts[0] != "Bearer" {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
-        return
-    }
-    tokenString := parts[1]
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization header format"})
+		return
+	}
+	tokenString := parts[1]
 
-    token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
-        return
-    }
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid token"})
+		return
+	}
 
-    claims, ok := token.Claims.(jwt.MapClaims)
-    if !ok {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "cannot parse claims"})
-        return
-    }
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot parse claims"})
+		return
+	}
 
-    exp, ok := claims["exp"].(float64)
-    var expiresAt time.Time
-    if ok {
-        expiresAt = time.Unix(int64(exp), 0)
-    } else {
-        expiresAt = time.Now().Add(24 * time.Hour)
-    }
+	exp, ok := claims["exp"].(float64)
+	var expiresAt time.Time
+	if ok {
+		expiresAt = time.Unix(int64(exp), 0)
+	} else {
+		expiresAt = time.Now().Add(24 * time.Hour)
+	}
 
-    err = services.BlacklistToken(tokenString, expiresAt)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to blacklist token: %v", err)})
-        return
-    }
+	err = services.BlacklistToken(tokenString, expiresAt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to blacklist token: %v", err)})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"message": "Logout successful, token blacklisted"})
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful, token blacklisted"})
 }
-
-
-
-
-
-
 
 // UpdateProfile godoc
 // @Summary Update user profile
-// @Description Update name, email, and bio of the logged in user
+// @Description Update name, email, bio, and avatar of the logged in user
 // @Tags Auth
-// @Accept  json
-// @Produce  json
-// @Param body body dto.UpdateProfileRequest true "Update Profile"
+// @Accept multipart/form-data
+// @Produce json
+// @Param name formData string false "Name"
+// @Param email formData string false "Email"
+// @Param bio formData string false "Bio"
+// @Param avatar formData file false "Avatar image"
 // @Success 200 {object} dto.UpdateProfileResponse
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
@@ -179,12 +175,14 @@ func UpdateProfileHandler(c *gin.Context) {
 	}
 
 	var req dto.UpdateProfileRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	res, err := services.UpdateProfile(userID, req)
+	avatarFile, _ := c.FormFile("avatar")
+
+	res, err := services.UpdateProfile(userID, req, avatarFile)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -229,7 +227,6 @@ func ForgotPasswordHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Check your email for reset link"})
 }
-
 
 // ResetPasswordHandler godoc
 // @Summary Reset user password

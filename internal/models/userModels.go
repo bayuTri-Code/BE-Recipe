@@ -12,6 +12,7 @@ type User struct {
 	Email     string    `gorm:"unique;not null" json:"email"`
 	Password  string    `gorm:"not null" json:"-"`
 	Bio       string         `gorm:"type:text" json:"bio"`
+	Avatar    string         `gorm:"type:text" json:"avatar"`
 
 	Recipes   []Recipe   `gorm:"foreignKey:UserID" json:"recipes"`
 	Favorites []Favorite `gorm:"foreignKey:UserID" json:"favorites"`
