@@ -88,6 +88,7 @@ func LoginHandler(c *gin.Context) {
 			UserId: user.ID.String(),
 			Name:   user.Name,
 			Email:  user.Email,
+			Bio:    user.Bio,
 		},
 	})
 }
@@ -160,7 +161,7 @@ func LogoutHandler(c *gin.Context) {
 // @Success 200 {object} dto.UpdateProfileResponse
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
-// @Router /api/profile [put]
+// @Router /auth/profile [put]
 func UpdateProfileHandler(c *gin.Context) {
 	userIDStr, exists := c.Get("userID")
 	if !exists {
@@ -174,15 +175,13 @@ func UpdateProfileHandler(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateProfileRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	name := c.PostForm("name")
+	email := c.PostForm("email")
+	bio := c.PostForm("bio")
 
 	avatarFile, _ := c.FormFile("avatar")
 
-	res, err := services.UpdateProfile(userID, req, avatarFile)
+	res, err := services.UpdateProfile(userID, name, email, bio, avatarFile)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -194,7 +193,6 @@ func UpdateProfileHandler(c *gin.Context) {
 		"data":    res,
 	})
 }
-
 
 // ForgotPasswordHandler godoc
 // @Summary Send password reset link

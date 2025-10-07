@@ -24,6 +24,7 @@ import (
 type Claims struct {
 	UserId uuid.UUID `json:"user_id"`
 	Email  string    `json:"email"`
+	Bio    string    `json:"bio"`
 	jwt.RegisteredClaims
 }
 
@@ -41,7 +42,6 @@ func init() {
 	jwtSecret = []byte(secret)
 }
 
-
 func saveUploadedFile(file *multipart.FileHeader, dst string) error {
 	src, err := file.Open()
 	if err != nil {
@@ -58,12 +58,6 @@ func saveUploadedFile(file *multipart.FileHeader, dst string) error {
 	_, err = out.ReadFrom(src)
 	return err
 }
-
-
-
-
-
-
 
 func RegisterServices(ctx context.Context, Name, Email, Password string) (*models.User, error) {
 	db := database.Db
@@ -103,9 +97,10 @@ func LoginServices(email, password string) (string, error) {
 	claims := &Claims{
 		UserId: user.ID,
 		Email:  user.Email,
+		Bio:    user.Bio,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt:  jwt.NewNumericDate(time.Now()), 
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ID:        uuid.NewString(),
 		},
 	}
@@ -127,29 +122,33 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
-
-func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest, avatarFile *multipart.FileHeader) (*dto.UpdateProfileResponse, error) {
+func UpdateProfile(userID uuid.UUID, name, email, bio string, avatarFile *multipart.FileHeader) (*dto.UpdateProfileResponse, error) {
 	var user models.User
 	if err := database.Db.First(&user, "id = ?", userID).Error; err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	if req.Name != "" {
-		user.Name = req.Name
+	if name != "" {
+		user.Name = name
 	}
-	if req.Email != "" {
-		user.Email = req.Email
+	if email != "" {
+		user.Email = email
 	}
-	if req.Bio != "" {
-		user.Bio = req.Bio
+	if bio != "" {
+		user.Bio = bio
 	}
 
 	if avatarFile != nil {
-		apiImagePath := os.Getenv("API_IMAGE_PATH")
+		apiImagePath := os.Getenv("API_IMAGE_PATH") 
 
 		uploadDir := "public/profile_storage"
 		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
 			return nil, errors.New("failed to create storage directory")
+		}
+
+		if user.Avatar != "" {
+			oldFile := filepath.Join(uploadDir, filepath.Base(user.Avatar))
+			_ = os.Remove(oldFile)
 		}
 
 		fileExt := filepath.Ext(avatarFile.Filename)
@@ -160,7 +159,7 @@ func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest, avatarFile *m
 			return nil, errors.New("failed to save avatar file")
 		}
 
-		user.Avatar = apiImagePath + "/profile-storage/" + newFileName
+		user.Avatar = fmt.Sprintf("%s/profile-storage/%s", apiImagePath, newFileName)
 	}
 
 	if err := database.Db.Save(&user).Error; err != nil {
@@ -175,44 +174,40 @@ func UpdateProfile(userID uuid.UUID, req dto.UpdateProfileRequest, avatarFile *m
 		Avatar: user.Avatar,
 	}, nil
 }
-
-
-
 func BlacklistToken(tokenString string, expiresAt time.Time) error {
-    fmt.Println("Blacklisting token:", tokenString)
+	fmt.Println("Blacklisting token:", tokenString)
 
-    blacklisted := dto.BlacklistedToken{
-        ID:        uuid.New(),
-        Token:     strings.TrimSpace(tokenString),
-        CreatedAt: time.Now(),
-        ExpiresAt: expiresAt,
-    }
+	blacklisted := dto.BlacklistedToken{
+		ID:        uuid.New(),
+		Token:     strings.TrimSpace(tokenString),
+		CreatedAt: time.Now(),
+		ExpiresAt: expiresAt,
+	}
 
-    if err := database.Db.Create(&blacklisted).Error; err != nil {
-        fmt.Printf("Gagal blacklist: %v\n", err)
-        return fmt.Errorf("failed to blacklist token: %v", err)
-    }
+	if err := database.Db.Create(&blacklisted).Error; err != nil {
+		fmt.Printf("Gagal blacklist: %v\n", err)
+		return fmt.Errorf("failed to blacklist token: %v", err)
+	}
 
-    fmt.Println("Token berhasil di-blacklist:", tokenString)
-    return nil
+	fmt.Println("Token berhasil di-blacklist:", tokenString)
+	return nil
 }
 
-
 func IsTokenBlacklisted(tokenString string) (bool, error) {
-    fmt.Println("cek token di blacklist:", tokenString)
+	fmt.Println("cek token di blacklist:", tokenString)
 
-    var token dto.BlacklistedToken
-    err := database.Db.Where("token = ?", strings.TrimSpace(tokenString)).First(&token).Error
+	var token dto.BlacklistedToken
+	err := database.Db.Where("token = ?", strings.TrimSpace(tokenString)).First(&token).Error
 
-    if err == gorm.ErrRecordNotFound {
-        return false, nil
-    }
-    if err != nil {
-        return false, err
-    }
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
 
-    fmt.Println("Token terblacklist:", token.Token)
-    return true, nil
+	fmt.Println("Token terblacklist:", token.Token)
+	return true, nil
 }
 
 func ForgotPassword(email string) (string, error) {
@@ -241,7 +236,6 @@ func ForgotPassword(email string) (string, error) {
 	return "Reset link sent to your email", nil
 }
 
-
 func ResetPassword(token, newPassword string) (bool, error) {
 	claims, err := utils.ValidateTokenReset(token)
 	if err != nil {
@@ -258,5 +252,3 @@ func ResetPassword(token, newPassword string) (bool, error) {
 
 	return true, nil
 }
-
-

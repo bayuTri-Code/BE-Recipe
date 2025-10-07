@@ -328,50 +328,6 @@ paths:
       summary: Get user dashboard data
       tags:
       - Dashboard
-  /api/profile:
-    put:
-      consumes:
-      - multipart/form-data
-      description: Update name, email, bio, and avatar of the logged in user
-      parameters:
-      - description: Name
-        in: formData
-        name: name
-        type: string
-      - description: Email
-        in: formData
-        name: email
-        type: string
-      - description: Bio
-        in: formData
-        name: bio
-        type: string
-      - description: Avatar image
-        in: formData
-        name: avatar
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/dto.UpdateProfileResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update user profile
-      tags:
-      - Auth
   /api/recipes:
     get:
       description: Retrieve all available recipes
@@ -699,6 +655,50 @@ paths:
           schema:
             $ref: '#/definitions/dto.ResponseError'
       summary: Login user
+      tags:
+      - Auth
+  /auth/profile:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update name, email, bio, and avatar of the logged in user
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        type: string
+      - description: Bio
+        in: formData
+        name: bio
+        type: string
+      - description: Avatar image
+        in: formData
+        name: avatar
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user profile
       tags:
       - Auth
   /auth/register:
