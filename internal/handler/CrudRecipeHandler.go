@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/bayuTri-Code/BE-Recipe/database"
 	dto "github.com/bayuTri-Code/BE-Recipe/internal/DTO"
+	"github.com/bayuTri-Code/BE-Recipe/internal/models"
 	"github.com/bayuTri-Code/BE-Recipe/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -138,6 +140,34 @@ func (h *RecipeHandler) GetRecipeByID(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+
+// GetByCategory godoc
+// @Summary Get recipes by category
+// @Description Get all recipes filtered by category (case-insensitive). If no category is provided, returns all recipes.
+// @Tags Recipes
+// @Accept json
+// @Produce json
+// @Param category query string false "Recipe category (example: food)"
+// @Success 200 {object} map[string]interface{} "Success"
+// @Failure 500 {object} map[string]interface{} "Internal Server Error"
+// @Router /recipesByCategory [get]
+func GetRecipesByCategory(c *gin.Context) {
+    category := c.Query("category") 
+
+    var recipes []models.Recipe
+    if category != "" {
+        database.Db.Where("LOWER(category) = LOWER(?)", category).Find(&recipes)
+    } else {
+        database.Db.Find(&recipes)
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "recipes": recipes,
+    })
+}
+
+
+
 // GetMyRecipes godoc
 // @Summary Get my recipes 
 // @Description Get all recipes created by the authenticated user
@@ -269,3 +299,5 @@ func (h *RecipeHandler) DeleteRecipe(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "recipe deleted"})
 }
+
+

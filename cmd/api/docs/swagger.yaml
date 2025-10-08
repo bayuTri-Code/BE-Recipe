@@ -151,6 +151,8 @@ definitions:
     type: object
   dto.UserResponse:
     properties:
+      bio:
+        type: string
       email:
         type: string
       name:
@@ -814,6 +816,33 @@ paths:
       summary: Logout user
       tags:
       - Auth
+  /recipesByCategory:
+    get:
+      consumes:
+      - application/json
+      description: Get all recipes filtered by category (case-insensitive). If no
+        category is provided, returns all recipes.
+      parameters:
+      - description: 'Recipe category (example: food)'
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get recipes by category
+      tags:
+      - Recipes
 securityDefinitions:
   BearerAuth:
     in: header

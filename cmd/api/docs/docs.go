@@ -847,6 +847,45 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/recipesByCategory": {
+            "get": {
+                "description": "Get all recipes filtered by category (case-insensitive). If no category is provided, returns all recipes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Recipes"
+                ],
+                "summary": "Get recipes by category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recipe category (example: food)",
+                        "name": "category",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1082,6 +1121,9 @@ const docTemplate = `{
         "dto.UserResponse": {
             "type": "object",
             "properties": {
+                "bio": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },

@@ -63,6 +63,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 	apiRecipe := r.Group("/api")
 	{
 		apiRecipe.GET("/recipes", recipeHandler.GetAllRecipes)
+		apiRecipe.GET("/recipesByCategory", handler.GetRecipesByCategory)
 
 		apiRecipe.GET("/myrecipes", middleware.AuthMiddleware(), recipeHandler.GetMyRecipes)
 		apiRecipe.GET("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.GetRecipeByID)
