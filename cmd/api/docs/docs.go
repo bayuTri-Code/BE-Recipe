@@ -1161,6 +1161,9 @@ const docTemplate = `{
         "dto.UserSummaryResponse": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },

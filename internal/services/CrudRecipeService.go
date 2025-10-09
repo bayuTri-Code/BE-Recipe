@@ -30,6 +30,7 @@ func toUserSummary(u models.User) dto.UserSummaryResponse {
 		ID:    u.ID,
 		Name:  u.Name,
 		Email: u.Email,
+		Avatar: u.Avatar,
 	}
 }
 
