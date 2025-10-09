@@ -122,7 +122,8 @@ func GetUserByEmail(email string) (*models.User, error) {
 	}
 	return &user, nil
 }
-func UpdateProfile(userID uuid.UUID, name, email, bio string, avatarFile *multipart.FileHeader) (*dto.UpdateProfileResponse, error) {
+
+func UpdateProfile(userID uuid.UUID, name, email, bio string, avatarFile, bannerFile *multipart.FileHeader) (*dto.UpdateProfileResponse, error) {
 	var user models.User
 	if err := database.Db.First(&user, "id = ?", userID).Error; err != nil {
 		return nil, errors.New("user not found")
@@ -138,17 +139,21 @@ func UpdateProfile(userID uuid.UUID, name, email, bio string, avatarFile *multip
 		user.Bio = bio
 	}
 
-	if avatarFile != nil {
-		apiImagePath := os.Getenv("API_IMAGE_PATH") 
+	apiImagePath := os.Getenv("API_IMAGE_PATH")
 
+
+	if avatarFile != nil {
 		uploadDir := "public/profile_storage"
 		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
-			return nil, errors.New("failed to create storage directory")
+			return nil, errors.New("failed to create avatar storage directory")
 		}
 
 		if user.Avatar != "" {
-			oldFile := filepath.Join(uploadDir, filepath.Base(user.Avatar))
-			_ = os.Remove(oldFile)
+			_ = os.Remove(filepath.Join(uploadDir, filepath.Base(user.Avatar)))
+		}
+		
+		if avatarFile.Size > 2*1024*1024 {
+			return nil, errors.New("avatar file size must not exceed 2MB")
 		}
 
 		fileExt := filepath.Ext(avatarFile.Filename)
@@ -162,6 +167,31 @@ func UpdateProfile(userID uuid.UUID, name, email, bio string, avatarFile *multip
 		user.Avatar = fmt.Sprintf("%s/profile-storage/%s", apiImagePath, newFileName)
 	}
 
+	if bannerFile != nil {
+		uploadDir := "public/profile_banner"
+		if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+			return nil, errors.New("failed to create banner storage directory")
+		}
+
+		if user.Banner != "" {
+			_ = os.Remove(filepath.Join(uploadDir, filepath.Base(user.Banner)))
+		}
+
+		if bannerFile.Size > 2*1024*1024 {
+			return nil, errors.New("avatar file size must not exceed 2MB")
+		}
+
+		fileExt := filepath.Ext(bannerFile.Filename)
+		newFileName := fmt.Sprintf("%s%s", uuid.NewString(), fileExt)
+		filePath := filepath.Join(uploadDir, newFileName)
+
+		if err := saveUploadedFile(bannerFile, filePath); err != nil {
+			return nil, errors.New("failed to save banner file")
+		}
+
+		user.Banner = fmt.Sprintf("%s/profile-banner/%s", apiImagePath, newFileName)
+	}
+
 	if err := database.Db.Save(&user).Error; err != nil {
 		return nil, errors.New("failed to update user")
 	}
@@ -172,8 +202,10 @@ func UpdateProfile(userID uuid.UUID, name, email, bio string, avatarFile *multip
 		Email:  user.Email,
 		Bio:    user.Bio,
 		Avatar: user.Avatar,
+		Banner: user.Banner,
 	}, nil
 }
+
 func BlacklistToken(tokenString string, expiresAt time.Time) error {
 	fmt.Println("Blacklisting token:", tokenString)
 

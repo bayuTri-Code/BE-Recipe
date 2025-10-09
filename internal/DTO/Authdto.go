@@ -53,6 +53,7 @@ type UpdateProfileResponse struct {
 	Email  string `json:"email"`
 	Bio    string `json:"bio"`
 	Avatar string `json:"avatar" binding:"omitempty"`
+	Banner string `json:"banner" binding:"omitempty"`
 }
 
 type EmailRequest struct {

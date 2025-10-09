@@ -150,17 +150,20 @@ func LogoutHandler(c *gin.Context) {
 
 // UpdateProfile godoc
 // @Summary Update user profile
-// @Description Update name, email, bio, and avatar of the logged in user
+// @Description Update the logged-in user's profile, including name, email, bio, avatar image adn banner image.
 // @Tags Auth
 // @Accept multipart/form-data
 // @Produce json
-// @Param name formData string false "Name"
-// @Param email formData string false "Email"
-// @Param bio formData string false "Bio"
-// @Param avatar formData file false "Avatar image"
-// @Success 200 {object} dto.UpdateProfileResponse
-// @Failure 400 {object} map[string]string
-// @Failure 401 {object} map[string]string
+// @Param name formData string false "Name of the user"
+// @Param email formData string false "Email address of the user"
+// @Param bio formData string false "Short biography"
+// @Param avatar formData file false "Avatar image file"
+// @Param banner formData file false "banner image file"
+// @Success 200 {object} dto.UpdateProfileResponse "Successfully updated profile"
+// @Failure 400 {object} map[string]string "Bad request / validation error"
+// @Failure 401 {object} map[string]string "Unauthorized / invalid token"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Security BearerAuth
 // @Router /auth/profile [put]
 func UpdateProfileHandler(c *gin.Context) {
 	userIDStr, exists := c.Get("userID")
@@ -180,8 +183,9 @@ func UpdateProfileHandler(c *gin.Context) {
 	bio := c.PostForm("bio")
 
 	avatarFile, _ := c.FormFile("avatar")
+	bannerFile, _ := c.FormFile("banner") 
 
-	res, err := services.UpdateProfile(userID, name, email, bio, avatarFile)
+	res, err := services.UpdateProfile(userID, name, email, bio, avatarFile, bannerFile)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -193,6 +197,7 @@ func UpdateProfileHandler(c *gin.Context) {
 		"data":    res,
 	})
 }
+
 
 // ForgotPasswordHandler godoc
 // @Summary Send password reset link

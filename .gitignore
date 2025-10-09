@@ -2,4 +2,5 @@
 
 /public/storage/*
 /public/profile_storage/*
+/public/profile_banner/*
 !/public/storage/.gitkeep

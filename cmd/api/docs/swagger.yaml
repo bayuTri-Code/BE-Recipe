@@ -140,6 +140,8 @@ definitions:
     properties:
       avatar:
         type: string
+      banner:
+        type: string
       bio:
         type: string
       email:
@@ -251,6 +253,8 @@ definitions:
   models.User:
     properties:
       avatar:
+        type: string
+      banner:
         type: string
       bio:
         type: string
@@ -663,43 +667,56 @@ paths:
     put:
       consumes:
       - multipart/form-data
-      description: Update name, email, bio, and avatar of the logged in user
+      description: Update the logged-in user's profile, including name, email, bio,
+        avatar image adn banner image.
       parameters:
-      - description: Name
+      - description: Name of the user
         in: formData
         name: name
         type: string
-      - description: Email
+      - description: Email address of the user
         in: formData
         name: email
         type: string
-      - description: Bio
+      - description: Short biography
         in: formData
         name: bio
         type: string
-      - description: Avatar image
+      - description: Avatar image file
         in: formData
         name: avatar
+        type: file
+      - description: banner image file
+        in: formData
+        name: banner
         type: file
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully updated profile
           schema:
             $ref: '#/definitions/dto.UpdateProfileResponse'
         "400":
-          description: Bad Request
+          description: Bad request / validation error
           schema:
             additionalProperties:
               type: string
             type: object
         "401":
-          description: Unauthorized
+          description: Unauthorized / invalid token
           schema:
             additionalProperties:
               type: string
             type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
       summary: Update user profile
       tags:
       - Auth

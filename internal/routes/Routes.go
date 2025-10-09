@@ -41,16 +41,17 @@ func Routes(db *gorm.DB) *gin.Engine {
 
 	r.Static("/storage", "./public/storage")
 	r.Static("/profile-storage", "./public/profile_storage")
+	r.Static("/profile-banner", "./public/profile_banner")
 
 	// Auth routes
 	auth := r.Group("/auth")
 	{
-		auth.POST("/register", handler.RegisterHandler)
-		auth.POST("/login", handler.LoginHandler)
+		auth.POST("/register", middleware.RateLimiter(5, 60), handler.RegisterHandler)
+		auth.POST("/login", middleware.RateLimiter(5, 60), handler.LoginHandler)
 		auth.POST("/forgot-password", handler.ForgotPasswordHandler)
 		auth.POST("/reset-password", handler.ResetPasswordHandler)
 		auth.POST("/logout", middleware.AuthMiddleware(), handler.LogoutHandler)
-		auth.PUT("/profile", middleware.AuthMiddleware(), handler.UpdateProfileHandler)
+		auth.PUT("/profile", middleware.AuthMiddleware(), middleware.RateLimiter(5, 60), handler.UpdateProfileHandler)
 	}
 
 	// Recipe & Favorite routes
@@ -67,13 +68,13 @@ func Routes(db *gorm.DB) *gin.Engine {
 
 		apiRecipe.GET("/myrecipes", middleware.AuthMiddleware(), recipeHandler.GetMyRecipes)
 		apiRecipe.GET("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.GetRecipeByID)
-		apiRecipe.POST("/recipes", middleware.AuthMiddleware(), recipeHandler.CreateRecipe)
-		apiRecipe.PUT("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.UpdateRecipe)
-		apiRecipe.DELETE("/recipes/:id", middleware.AuthMiddleware(), recipeHandler.DeleteRecipe)
+		apiRecipe.POST("/recipes", middleware.AuthMiddleware(), middleware.RateLimiter(5, 60), recipeHandler.CreateRecipe)
+		apiRecipe.PUT("/recipes/:id", middleware.AuthMiddleware(),  middleware.RateLimiter(10, 60), recipeHandler.UpdateRecipe)
+		apiRecipe.DELETE("/recipes/:id", middleware.AuthMiddleware(), middleware.RateLimiter(15, 60), recipeHandler.DeleteRecipe)
 
 		// Favorites
 		apiRecipe.GET("/recipes/favorites", middleware.AuthMiddleware(), favoriteHandler.GetAllFavorites)
-		apiRecipe.POST("/recipes/:recipe_id/favorites", middleware.AuthMiddleware(), favoriteHandler.AddFavoriteHandler)
+		apiRecipe.POST("/recipes/:recipe_id/favorites", middleware.AuthMiddleware(), middleware.RateLimiter(20, 60), favoriteHandler.AddFavoriteHandler)
 		// apiRecipe.DELETE("/recipes/:id/favorites/:user_id", favoriteHandler.RemoveFavorite)
 	}
 
@@ -82,7 +83,7 @@ func Routes(db *gorm.DB) *gin.Engine {
 	dashboardHandler := handler.NewDashboardHandler(dashboardService)
 
 	apiDashboard := r.Group("/api/page")
-	apiDashboard.Use(middleware.AuthMiddleware())
+	apiDashboard.Use(middleware.AuthMiddleware(), middleware.RateLimiter(100, 60))
 	{
 		apiDashboard.GET("/dashboard", dashboardHandler.GetDashboard)
 	}

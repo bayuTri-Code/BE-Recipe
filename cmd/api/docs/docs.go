@@ -591,7 +591,12 @@ const docTemplate = `{
         },
         "/auth/profile": {
             "put": {
-                "description": "Update name, email, bio, and avatar of the logged in user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the logged-in user's profile, including name, email, bio, avatar image adn banner image.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -605,38 +610,44 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Name",
+                        "description": "Name of the user",
                         "name": "name",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "Email",
+                        "description": "Email address of the user",
                         "name": "email",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "Bio",
+                        "description": "Short biography",
                         "name": "bio",
                         "in": "formData"
                     },
                     {
                         "type": "file",
-                        "description": "Avatar image",
+                        "description": "Avatar image file",
                         "name": "avatar",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "banner image file",
+                        "name": "banner",
                         "in": "formData"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully updated profile",
                         "schema": {
                             "$ref": "#/definitions/dto.UpdateProfileResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request / validation error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -645,7 +656,16 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized / invalid token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1104,6 +1124,9 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
+                "banner": {
+                    "type": "string"
+                },
                 "bio": {
                     "type": "string"
                 },
@@ -1276,6 +1299,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar": {
+                    "type": "string"
+                },
+                "banner": {
                     "type": "string"
                 },
                 "bio": {
